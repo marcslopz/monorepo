@@ -36,15 +36,6 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
     defaults:
       run:
         working-directory: backend/demo
@@ -62,7 +53,6 @@ jobs:
       - name: Test
         env:
           DATABASE_URL: postgresql+asyncpg://appuser:apppassword@localhost:5432/demo_db
-          REDIS_URL: redis://localhost:6379/0
           JWT_SECRET: test-secret
           JWT_ALGORITHM: HS256
           JWT_EXPIRE_MINUTES: 60

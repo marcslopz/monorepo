@@ -7,9 +7,6 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "postgresql+asyncpg://appuser:apppassword@postgres:5432/appdb"
 
-    # Redis
-    redis_url: str = "redis://redis:6379/0"
-
     # Auth
     jwt_secret: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"
