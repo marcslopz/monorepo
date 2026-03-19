@@ -1,7 +1,7 @@
 # Default app — override with: make <target> APP=demo
 APP ?= demo
 
-.PHONY: help build dev stop clean sync logs shell-backend shell-frontend \
+.PHONY: help build dev stop clean logs shell-backend shell-frontend \
         migrate migrate-create test test-unit test-integration test-e2e test-frontend \
         lint lint-fix lint-frontend format typecheck check check-all
 
@@ -11,11 +11,10 @@ help:
 	@echo "Current APP: $(APP)"
 	@echo ""
 	@echo "Infrastructure:"
-	@echo "  build              Build containers for APP"
+	@echo "  build              Build containers for APP (also updates deps)"
 	@echo "  dev                Start APP services"
 	@echo "  stop               Stop all services"
 	@echo "  clean              Stop and remove all volumes (fresh start)"
-	@echo "  sync               Sync backend deps inside container (after pyproject.toml changes)"
 	@echo "  logs               Follow logs"
 	@echo "  shell-backend      Shell into backend container"
 	@echo "  shell-frontend     Shell into frontend container"
@@ -54,9 +53,6 @@ stop:
 clean:
 	docker compose --profile all down -v
 
-sync:
-	docker compose exec $(APP)-backend uv sync --extra dev
-
 logs:
 	docker compose --profile $(APP) logs -f
 
@@ -67,7 +63,7 @@ shell-frontend:
 	docker compose exec $(APP)-frontend sh
 
 # Database
-VENV = /app/.venv/bin
+VENV = /opt/venv/bin
 
 migrate:
 	docker compose exec $(APP)-backend $(VENV)/alembic upgrade head
