@@ -108,4 +108,4 @@ Build output:    frontend/mariland/dist
 | App      | Cloudflare Pages URL | Status |
 |----------|----------------------|--------|
 | demo     | https://monorepo-c00.pages.dev | ✅ live |
-| mariland | — | ⏳ pending |
+| mariland | https://mariland.pages.dev | ✅ live |
