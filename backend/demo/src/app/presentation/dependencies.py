@@ -14,8 +14,8 @@ from app.infrastructure.persistence.repositories.sqlalchemy_item_repository impo
 )
 
 
-async def get_redis() -> AsyncGenerator[aioredis.Redis, None]:  # type: ignore[type-arg]
-    client: aioredis.Redis = aioredis.from_url(settings.redis_url, decode_responses=True)  # type: ignore[type-arg]
+async def get_redis() -> AsyncGenerator[aioredis.Redis, None]:
+    client: aioredis.Redis = aioredis.from_url(settings.redis_url, decode_responses=True)
     try:
         yield client
     finally:
@@ -23,7 +23,7 @@ async def get_redis() -> AsyncGenerator[aioredis.Redis, None]:  # type: ignore[t
 
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
-RedisDep = Annotated[aioredis.Redis, Depends(get_redis)]  # type: ignore[type-arg]
+RedisDep = Annotated[aioredis.Redis, Depends(get_redis)]
 
 
 def get_item_service(session: SessionDep, redis: RedisDep) -> ItemService:

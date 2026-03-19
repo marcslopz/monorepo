@@ -55,7 +55,9 @@ async def test_create_item(async_client: AsyncClient, mock_service: AsyncMock) -
     assert response.status_code == 201
     data = response.json()
     assert data["name"] == "New Item"
-    mock_service.create_item.assert_awaited_once_with(name="New Item", description="Created via API")
+    mock_service.create_item.assert_awaited_once_with(
+        name="New Item", description="Created via API"
+    )
 
 
 @pytest.mark.asyncio
@@ -90,7 +92,9 @@ async def test_delete_item(async_client: AsyncClient, mock_service: AsyncMock) -
 
 
 @pytest.mark.asyncio
-async def test_create_item_invalid_payload(async_client: AsyncClient, mock_service: AsyncMock) -> None:
+async def test_create_item_invalid_payload(
+    async_client: AsyncClient, mock_service: AsyncMock
+) -> None:
     response = await async_client.post("/api/v1/items", json={"name": ""})
 
     assert response.status_code == 422

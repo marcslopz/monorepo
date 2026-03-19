@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import AsyncMock
 
@@ -13,11 +13,10 @@ from app.domain.models.item import Item
 from app.infrastructure.persistence.database import Base
 from app.main import app
 
-
 # ── Shared helpers ─────────────────────────────────────────────────────────────
 
 def make_item(**kwargs: Any) -> Item:
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     defaults: dict[str, Any] = {
         "id": uuid.uuid4(),
         "name": "Test Item",

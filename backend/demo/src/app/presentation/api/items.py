@@ -4,7 +4,12 @@ from fastapi import APIRouter, Query, status
 
 from app.domain.models.item import Item
 from app.presentation.dependencies import ItemServiceDep
-from app.presentation.schemas.item_schemas import ItemCreate, ItemListResponse, ItemResponse, ItemUpdate
+from app.presentation.schemas.item_schemas import (
+    ItemCreate,
+    ItemListResponse,
+    ItemResponse,
+    ItemUpdate,
+)
 
 router = APIRouter(prefix="/items", tags=["items"])
 

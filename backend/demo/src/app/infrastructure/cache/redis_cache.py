@@ -5,7 +5,7 @@ import redis.asyncio as aioredis
 
 
 class RedisCacheService:
-    def __init__(self, redis_client: aioredis.Redis) -> None:  # type: ignore[type-arg]
+    def __init__(self, redis_client: aioredis.Redis) -> None:
         self._redis = redis_client
 
     async def get(self, key: str) -> Any | None:
