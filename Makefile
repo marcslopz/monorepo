@@ -1,9 +1,9 @@
 # Default app — override with: make <target> APP=demo
 APP ?= demo
 
-.PHONY: help build dev stop logs shell-backend shell-frontend \
+.PHONY: help build dev stop clean sync logs shell-backend shell-frontend \
         migrate migrate-create test test-unit test-integration test-e2e test-frontend \
-        lint format typecheck check
+        lint lint-fix lint-frontend format typecheck check check-all
 
 help:
 	@echo "Usage: make <target> [APP=<app>]"
@@ -14,6 +14,8 @@ help:
 	@echo "  build              Build containers for APP"
 	@echo "  dev                Start APP services"
 	@echo "  stop               Stop all services"
+	@echo "  clean              Stop and remove all volumes (fresh start)"
+	@echo "  sync               Sync backend deps inside container (after pyproject.toml changes)"
 	@echo "  logs               Follow logs"
 	@echo "  shell-backend      Shell into backend container"
 	@echo "  shell-frontend     Shell into frontend container"
@@ -24,9 +26,12 @@ help:
 	@echo ""
 	@echo "Quality:"
 	@echo "  lint               ruff check on backend/APP"
+	@echo "  lint-fix           ruff check --fix on backend/APP"
+	@echo "  lint-frontend      eslint on frontend/APP"
 	@echo "  format             ruff format on backend/APP"
 	@echo "  typecheck          mypy on backend/APP"
-	@echo "  check              lint + typecheck"
+	@echo "  check              lint + typecheck (backend)"
+	@echo "  check-all          lint + typecheck + lint-frontend"
 	@echo ""
 	@echo "Tests:"
 	@echo "  test               All backend tests for APP"
@@ -44,7 +49,13 @@ dev:
 	docker compose --profile $(APP) up
 
 stop:
-	docker compose down
+	docker compose --profile all down
+
+clean:
+	docker compose --profile all down -v
+
+sync:
+	docker compose exec $(APP)-backend uv sync --extra dev
 
 logs:
 	docker compose --profile $(APP) logs -f
@@ -68,13 +79,21 @@ migrate-create:
 lint:
 	docker compose exec $(APP)-backend $(VENV)/ruff check src tests
 
+lint-fix:
+	docker compose exec $(APP)-backend $(VENV)/ruff check --fix src tests
+
+lint-frontend:
+	docker compose exec $(APP)-frontend pnpm lint
+
 format:
 	docker compose exec $(APP)-backend $(VENV)/ruff format src tests
 
 typecheck:
-	docker compose exec $(APP)-backend $(VENV)/mypy src
+	docker compose exec $(APP)-backend $(VENV)/mypy -p app
 
 check: lint typecheck
+
+check-all: lint typecheck lint-frontend
 
 # Tests
 test:
