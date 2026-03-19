@@ -1,5 +1,4 @@
 import pytest
-import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.persistence.repositories.sqlalchemy_item_repository import (

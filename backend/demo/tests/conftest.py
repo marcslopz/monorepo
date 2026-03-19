@@ -12,7 +12,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.domain.models.item import Item
 from app.infrastructure.persistence.database import Base
 from app.main import app
-from app.presentation.dependencies import get_item_service
 
 
 # ── Shared helpers ─────────────────────────────────────────────────────────────
