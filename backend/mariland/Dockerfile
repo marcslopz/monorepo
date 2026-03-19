@@ -34,4 +34,4 @@ ENV PYTHONPATH="/app/src"
 
 EXPOSE 8001
 
-CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "4"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn src.app.main:app --host 0.0.0.0 --port 8001 --workers 4"]
