@@ -5,13 +5,14 @@ from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.config import settings
-from app.infrastructure.persistence.database import Base
+from app.infrastructure.persistence.database import Base, _build_engine_url
 
 # Import all models so Alembic can detect them
 import app.infrastructure.persistence.models  # noqa: F401
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.database_url)
+_db_url, _db_connect_args = _build_engine_url()
+config.set_main_option("sqlalchemy.url", _db_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -38,7 +39,7 @@ def do_run_migrations(connection: object) -> None:
 
 
 async def run_async_migrations() -> None:
-    connectable = create_async_engine(settings.database_url)
+    connectable = create_async_engine(_db_url, connect_args=_db_connect_args)
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
     await connectable.dispose()
