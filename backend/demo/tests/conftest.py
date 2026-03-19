@@ -1,21 +1,21 @@
+import os
 import uuid
 from datetime import datetime, timezone
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.domain.models.item import Item
-from app.infrastructure.persistence.database import Base, get_session
+from app.infrastructure.persistence.database import Base
 from app.main import app
 from app.presentation.dependencies import get_item_service
 
 
-# ── Shared fixtures ────────────────────────────────────────────────────────────
+# ── Shared helpers ─────────────────────────────────────────────────────────────
 
 def make_item(**kwargs: Any) -> Item:
     now = datetime.now(tz=timezone.utc)
@@ -45,14 +45,16 @@ def mock_cache() -> AsyncMock:
 
 # ── Database fixtures (integration) ───────────────────────────────────────────
 
-TEST_DATABASE_URL = "postgresql+asyncpg://appuser:apppassword@postgres:5432/appdb_test"
+def _db_url() -> str:
+    return os.environ.get(
+        "DATABASE_URL",
+        "postgresql+asyncpg://appuser:apppassword@postgres:5432/demo_db",
+    )
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture
 async def test_engine() -> Any:
-    import os
-    db_url = os.environ.get("DATABASE_URL", TEST_DATABASE_URL)
-    engine = create_async_engine(db_url)
+    engine = create_async_engine(_db_url())
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield engine

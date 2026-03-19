@@ -56,36 +56,38 @@ shell-frontend:
 	docker compose exec $(APP)-frontend sh
 
 # Database
+VENV = /app/.venv/bin
+
 migrate:
-	docker compose exec $(APP)-backend alembic upgrade head
+	docker compose exec $(APP)-backend $(VENV)/alembic upgrade head
 
 migrate-create:
-	docker compose exec $(APP)-backend alembic revision --autogenerate -m "$(NAME)"
+	docker compose exec $(APP)-backend $(VENV)/alembic revision --autogenerate -m "$(NAME)"
 
 # Quality
 lint:
-	docker compose exec $(APP)-backend ruff check src tests
+	docker compose exec $(APP)-backend $(VENV)/ruff check src tests
 
 format:
-	docker compose exec $(APP)-backend ruff format src tests
+	docker compose exec $(APP)-backend $(VENV)/ruff format src tests
 
 typecheck:
-	docker compose exec $(APP)-backend mypy src
+	docker compose exec $(APP)-backend $(VENV)/mypy src
 
 check: lint typecheck
 
 # Tests
 test:
-	docker compose exec $(APP)-backend pytest tests/ -v
+	docker compose exec $(APP)-backend $(VENV)/pytest tests/ -v
 
 test-unit:
-	docker compose exec $(APP)-backend pytest tests/unit/ -v
+	docker compose exec $(APP)-backend $(VENV)/pytest tests/unit/ -v
 
 test-integration:
-	docker compose exec $(APP)-backend pytest tests/integration/ -v
+	docker compose exec $(APP)-backend $(VENV)/pytest tests/integration/ -v
 
 test-e2e:
-	docker compose exec $(APP)-backend pytest tests/e2e/ -v
+	docker compose exec $(APP)-backend $(VENV)/pytest tests/e2e/ -v
 
 test-frontend:
 	docker compose exec $(APP)-frontend pnpm test run

@@ -25,7 +25,7 @@ class SQLAlchemyItemRepository:
         rows = result.scalars().all()
         return [Item.model_validate(row) for row in rows]
 
-    async def create(self, name: str, description: str | None) -> Item:
+    async def create(self, name: str, description: str | None = None) -> Item:
         row = ItemModel(name=name, description=description)
         self._session.add(row)
         await self._session.flush()
