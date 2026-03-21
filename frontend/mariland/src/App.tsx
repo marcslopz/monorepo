@@ -33,6 +33,7 @@ export default function App() {
       || (p.direccion ?? '').toLowerCase().includes(q)
       || (p.notas ?? '').toLowerCase().includes(q)
       || (p.barrio ?? '').toLowerCase().includes(q)
+      || (p.contacto_inmobiliaria ?? '').toLowerCase().includes(q)
     const matchEstado = !estadoFilter || p.estado === estadoFilter
     const matchBarrio = !barrioFilter || p.barrio === barrioFilter
     const matchDescartados = !hideDescartados || estadoFilter === 'descartado' || p.estado !== 'descartado'
