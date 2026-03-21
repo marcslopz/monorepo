@@ -23,6 +23,7 @@ export default function App() {
   const [search, setSearch] = useState('')
   const [estadoFilter, setEstadoFilter] = useState('')
   const [barrioFilter, setBarrioFilter] = useState('')
+  const [hideDescartados, setHideDescartados] = useState(true)
 
   const barrios = [...new Set(pisos.map((p) => p.barrio).filter((b): b is string => b != null))].sort()
 
@@ -34,7 +35,8 @@ export default function App() {
       || (p.barrio ?? '').toLowerCase().includes(q)
     const matchEstado = !estadoFilter || p.estado === estadoFilter
     const matchBarrio = !barrioFilter || p.barrio === barrioFilter
-    return matchSearch && matchEstado && matchBarrio
+    const matchDescartados = !hideDescartados || estadoFilter === 'descartado' || p.estado !== 'descartado'
+    return matchSearch && matchEstado && matchBarrio && matchDescartados
   })
 
   async function handleCreate(data: PisoCreate | PisoUpdate) {
@@ -85,6 +87,7 @@ export default function App() {
           estadoFilter={estadoFilter} setEstadoFilter={setEstadoFilter}
           barrioFilter={barrioFilter} setBarrioFilter={setBarrioFilter}
           barrios={barrios}
+          hideDescartados={hideDescartados} setHideDescartados={setHideDescartados}
         />
 
         {loading && <p className="text-center text-gray-500 py-12">Cargando pisos...</p>}

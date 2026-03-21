@@ -8,6 +8,8 @@ interface FiltersProps {
   barrioFilter: string
   setBarrioFilter: (v: string) => void
   barrios: string[]
+  hideDescartados: boolean
+  setHideDescartados: (v: boolean) => void
 }
 
 export default function Filters({
@@ -18,6 +20,8 @@ export default function Filters({
   barrioFilter,
   setBarrioFilter,
   barrios,
+  hideDescartados,
+  setHideDescartados,
 }: FiltersProps) {
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -43,6 +47,15 @@ export default function Filters({
         <option value="">Todos los barrios</option>
         {barrios.map((b) => <option key={b} value={b}>{b}</option>)}
       </select>
+      <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={hideDescartados}
+          onChange={(e) => setHideDescartados(e.target.checked)}
+          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+        Ocultar descartados
+      </label>
     </div>
   )
 }
