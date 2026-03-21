@@ -1,4 +1,4 @@
-const ESTADOS = ['candidato', 'visitado', 'descartado', 'oferta', 'comprado']
+const ESTADOS = ['candidato', 'contactado', 'agendado', 'visitado', 'descartado', 'oferta', 'comprado']
 
 interface FiltersProps {
   search: string
