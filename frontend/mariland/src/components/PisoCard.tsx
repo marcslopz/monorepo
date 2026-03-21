@@ -101,7 +101,7 @@ export default function PisoCard({ piso, onEdit, onDelete, onComments, onPrices,
 
       {piso.notas && <p className="mt-2 text-sm text-gray-500 italic truncate">{piso.notas}</p>}
 
-      {(piso.contacto_nombre ?? piso.contacto_telefono) && (
+      {(piso.contacto_nombre ?? piso.contacto_telefono ?? piso.contacto_inmobiliaria) && (
         <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
           <span>{piso.contacto_inmobiliaria ? '🏢' : '👤'}</span>
           {piso.contacto_nombre && <span className="font-medium">{piso.contacto_nombre}</span>}
