@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse, urlunparse
@@ -40,6 +41,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 def create_app() -> FastAPI:
+    logging.basicConfig(
+        level=getattr(logging, settings.log_level.upper(), logging.INFO),
+        format="%(levelname)-8s %(name)s - %(message)s",
+    )
+
     app = FastAPI(
         title="Mariland API",
         description="Tracker de pisos con arquitectura hexagonal",
