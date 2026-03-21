@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Piso, PisoCreate, PisoUpdate } from '../types/piso'
 import Modal from './Modal'
 
-const ESTADOS = ['candidato', 'visitado', 'descartado', 'oferta', 'comprado']
+const ESTADOS = ['candidato', 'contactado', 'agendado', 'visitado', 'descartado', 'oferta', 'comprado']
 const CERT_ENERGETICA = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'en trámite', 'exento']
 const ORIENTACIONES = ['Norte', 'Noreste', 'Este', 'Sureste', 'Sur', 'Suroeste', 'Oeste', 'Noroeste']
 const BARRIOS = [

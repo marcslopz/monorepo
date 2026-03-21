@@ -81,4 +81,14 @@ describe('PisoCard', () => {
     })
     expect(screen.getByText('💬 1')).toBeInTheDocument()
   })
+
+  it('renders badge for estado contactado', () => {
+    renderCard({ estado: 'contactado' })
+    expect(screen.getByText('contactado')).toBeInTheDocument()
+  })
+
+  it('renders badge for estado agendado', () => {
+    renderCard({ estado: 'agendado' })
+    expect(screen.getByText('agendado')).toBeInTheDocument()
+  })
 })

@@ -65,4 +65,18 @@ describe('Stats', () => {
     expect(screen.getByText('candidato')).toBeInTheDocument()
     expect(screen.getByText('visitado')).toBeInTheDocument()
   })
+
+  it('renders contactado in estado breakdown', () => {
+    render(<Stats pisos={[
+      makePiso({ estado: 'contactado' }),
+    ]} />)
+    expect(screen.getByText('contactado')).toBeInTheDocument()
+  })
+
+  it('renders agendado in estado breakdown', () => {
+    render(<Stats pisos={[
+      makePiso({ estado: 'agendado' }),
+    ]} />)
+    expect(screen.getByText('agendado')).toBeInTheDocument()
+  })
 })

@@ -53,3 +53,15 @@ describe('Filters - hideDescartados checkbox', () => {
     expect(props.setHideDescartados).toHaveBeenCalledWith(true)
   })
 })
+
+describe('Filters - estado dropdown options', () => {
+  it('includes contactado option in estado dropdown', () => {
+    renderFilters()
+    expect(screen.getByRole('option', { name: 'contactado' })).toBeInTheDocument()
+  })
+
+  it('includes agendado option in estado dropdown', () => {
+    renderFilters()
+    expect(screen.getByRole('option', { name: 'agendado' })).toBeInTheDocument()
+  })
+})
