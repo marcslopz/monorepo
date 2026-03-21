@@ -54,6 +54,7 @@ services:
     environment:
       DATABASE_URL: ${MARILAND_DATABASE_URL:-postgresql+asyncpg://appuser:apppassword@postgres:5432/mariland_db}
       CORS_ORIGINS: ${MARILAND_CORS_ORIGINS:-http://localhost:5174}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
     command: sh prestart.sh
     depends_on:
       postgres:

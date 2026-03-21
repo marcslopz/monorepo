@@ -32,6 +32,10 @@ export function usePisos() {
     return created
   }
 
+  function prependPiso(piso: Piso): void {
+    setPisos((ps) => [piso, ...ps])
+  }
+
   async function updatePiso(id: number, data: PisoUpdate): Promise<Piso> {
     const updated = await pisosApi.update(id, data)
     updatePisoInState(updated)
@@ -92,6 +96,7 @@ export function usePisos() {
     loading,
     error,
     createPiso,
+    prependPiso,
     updatePiso,
     deletePiso,
     addComment,
