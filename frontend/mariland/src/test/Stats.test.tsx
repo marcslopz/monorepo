@@ -7,6 +7,7 @@ function makePiso(overrides: Partial<Piso> = {}): Piso {
   return {
     id: 1,
     url: null,
+    imagen_url: null,
     direccion: 'Test',
     barrio: null,
     precio: null,
