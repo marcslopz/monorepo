@@ -28,7 +28,7 @@ export default function Filters({
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Buscar por dirección, inmobiliaria o notas..."
+        placeholder="Buscar por dirección o notas..."
         className="flex-1 min-w-48 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
       />
       <select
