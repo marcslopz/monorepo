@@ -7,6 +7,7 @@ import type { Piso } from '../types/piso'
 const basePiso: Piso = {
   id: 1,
   url: null,
+  imagen_url: null,
   direccion: 'Calle Test 1',
   barrio: 'Centre',
   precio: 250000,

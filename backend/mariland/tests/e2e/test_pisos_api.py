@@ -98,9 +98,7 @@ async def test_update_piso(async_client: AsyncClient, mock_piso_svc: AsyncMock) 
     piso = make_piso(id=1, estado="visitado", precio=190000)
     mock_piso_svc.update_piso.return_value = piso
 
-    response = await async_client.put(
-        "/api/pisos/1", json={"estado": "visitado", "precio": 190000}
-    )
+    response = await async_client.put("/api/pisos/1", json={"estado": "visitado", "precio": 190000})
 
     assert response.status_code == 200
     assert response.json()["estado"] == "visitado"
@@ -155,3 +153,33 @@ async def test_delete_price(async_client: AsyncClient, mock_price_svc: AsyncMock
     response = await async_client.delete("/api/pisos/1/prices/1")
 
     assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_create_piso_with_imagen_url(
+    async_client: AsyncClient, mock_piso_svc: AsyncMock
+) -> None:
+    piso = make_piso(id=1, imagen_url="https://example.com/foto.jpg")
+    mock_piso_svc.create_piso.return_value = piso
+
+    response = await async_client.post(
+        "/api/pisos/",
+        json={"estado": "candidato", "imagen_url": "https://example.com/foto.jpg"},
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["imagen_url"] == "https://example.com/foto.jpg"
+
+
+@pytest.mark.asyncio
+async def test_piso_out_contains_imagen_url_null(
+    async_client: AsyncClient, mock_piso_svc: AsyncMock
+) -> None:
+    piso = make_piso(id=2, imagen_url=None)
+    mock_piso_svc.get_piso.return_value = piso
+
+    response = await async_client.get("/api/pisos/2")
+
+    assert response.status_code == 200
+    assert response.json()["imagen_url"] is None

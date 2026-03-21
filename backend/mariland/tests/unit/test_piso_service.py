@@ -24,9 +24,7 @@ async def test_list_pisos(service: PisoService, mock_piso_repository: AsyncMock)
 
 
 @pytest.mark.asyncio
-async def test_get_piso_returns_piso(
-    service: PisoService, mock_piso_repository: AsyncMock
-) -> None:
+async def test_get_piso_returns_piso(service: PisoService, mock_piso_repository: AsyncMock) -> None:
     piso = make_piso(id=42, direccion="Gran Via 1")
     mock_piso_repository.get_by_id.return_value = piso
 
@@ -99,3 +97,36 @@ async def test_delete_piso_raises_not_found(
 
     with pytest.raises(NotFoundError):
         await service.delete_piso(999)
+
+
+@pytest.mark.asyncio
+async def test_create_piso_with_imagen_url(
+    service: PisoService, mock_piso_repository: AsyncMock
+) -> None:
+    piso = make_piso(imagen_url="https://example.com/foto.jpg")
+    mock_piso_repository.create.return_value = piso
+
+    data = {
+        "direccion": "Calle Falsa 123",
+        "estado": "candidato",
+        "imagen_url": "https://example.com/foto.jpg",
+    }
+    result = await service.create_piso(data)
+
+    assert result.imagen_url == "https://example.com/foto.jpg"
+    mock_piso_repository.create.assert_awaited_once_with(data)
+
+
+@pytest.mark.asyncio
+async def test_update_piso_imagen_url(
+    service: PisoService, mock_piso_repository: AsyncMock
+) -> None:
+    piso = make_piso(imagen_url="https://nueva.com/img.jpg")
+    mock_piso_repository.update.return_value = piso
+
+    result = await service.update_piso(1, {"imagen_url": "https://nueva.com/img.jpg"})
+
+    assert result.imagen_url == "https://nueva.com/img.jpg"
+    mock_piso_repository.update.assert_awaited_once_with(
+        1, {"imagen_url": "https://nueva.com/img.jpg"}
+    )

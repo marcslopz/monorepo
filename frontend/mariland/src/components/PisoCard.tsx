@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import type { Piso, PriceHistory } from '../types/piso'
 import ActionMenu from './ActionMenu'
+import ImagenModal from './ImagenModal'
 
 const ESTADO_COLORS: Record<string, string> = {
   candidato: 'bg-blue-100 text-blue-700',
@@ -41,12 +43,22 @@ interface PisoCardProps {
 }
 
 export default function PisoCard({ piso, onEdit, onDelete, onComments, onPrices, onExtras }: PisoCardProps) {
+  const [showImagenModal, setShowImagenModal] = useState(false)
   const variation = priceVariation(piso)
   const precioM2 = piso.precio && piso.metros ? Math.round(piso.precio / piso.metros) : null
   const certColor = piso.certificacion_energetica ? CERT_COLORS[piso.certificacion_energetica] : undefined
 
   return (
     <div className={`rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md ${piso.estado === 'descartado' ? 'opacity-60' : ''}`}>
+      {piso.imagen_url && (
+        <button
+          type="button"
+          onClick={() => setShowImagenModal(true)}
+          className="-mx-5 -mt-5 mb-3 block w-[calc(100%+2.5rem)] overflow-hidden rounded-t-2xl"
+        >
+          <img src={piso.imagen_url} alt="Foto del piso" className="h-40 w-full object-cover" />
+        </button>
+      )}
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <h3 className="truncate font-semibold text-gray-900">
@@ -124,6 +136,9 @@ export default function PisoCard({ piso, onEdit, onDelete, onComments, onPrices,
           </a>
         )}
       </div>
+      {showImagenModal && piso.imagen_url && (
+        <ImagenModal url={piso.imagen_url} onClose={() => setShowImagenModal(false)} />
+      )}
     </div>
   )
 }

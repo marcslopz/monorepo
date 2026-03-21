@@ -13,6 +13,7 @@ class PisoModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    imagen_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     direccion: Mapped[str | None] = mapped_column(String(512), nullable=True)
     barrio: Mapped[str | None] = mapped_column(String(256), nullable=True)
     precio: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -30,9 +31,7 @@ class PisoModel(Base):
     estado: Mapped[str] = mapped_column(String(64), nullable=False, default="candidato")
     extras: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True, default=dict)
     notas: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
@@ -60,9 +59,7 @@ class PriceHistoryModel(Base):
     )
     precio: Mapped[int] = mapped_column(Integer, nullable=False)
     notas: Mapped[str | None] = mapped_column(Text, nullable=True)
-    fecha: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     piso: Mapped["PisoModel"] = relationship("PisoModel", back_populates="price_history")
 
@@ -75,8 +72,6 @@ class CommentModel(Base):
         Integer, ForeignKey("pisos.id", ondelete="CASCADE"), nullable=False
     )
     texto: Mapped[str] = mapped_column(Text, nullable=False)
-    fecha: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     piso: Mapped["PisoModel"] = relationship("PisoModel", back_populates="comments")

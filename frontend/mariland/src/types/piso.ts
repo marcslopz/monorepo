@@ -16,6 +16,7 @@ export interface Comment {
 export interface Piso {
   id: number
   url: string | null
+  imagen_url: string | null
   direccion: string | null
   barrio: string | null
   precio: number | null
@@ -41,6 +42,7 @@ export interface Piso {
 
 export interface PisoCreate {
   url?: string | null
+  imagen_url?: string | null
   direccion?: string | null
   barrio?: string | null
   precio?: number | null

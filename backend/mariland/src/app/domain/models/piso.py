@@ -10,6 +10,7 @@ from app.domain.models.price_history import PriceHistory
 class Piso(BaseModel):
     id: int
     url: str | None
+    imagen_url: str | None
     direccion: str | None
     barrio: str | None
     precio: int | None
