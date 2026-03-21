@@ -22,6 +22,7 @@ def make_piso(**kwargs: Any) -> Piso:
     defaults: dict[str, Any] = {
         "id": 1,
         "url": None,
+        "imagen_url": None,
         "direccion": "Calle Falsa 123",
         "barrio": "Centre",
         "precio": 250000,

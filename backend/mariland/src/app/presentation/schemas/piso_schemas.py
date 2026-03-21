@@ -34,6 +34,7 @@ class CommentOut(BaseModel):
 
 class PisoCreate(BaseModel):
     url: str | None = None
+    imagen_url: str | None = None
     direccion: str | None = None
     barrio: str | None = None
     precio: int | None = None
@@ -55,6 +56,7 @@ class PisoCreate(BaseModel):
 
 class PisoUpdate(BaseModel):
     url: str | None = None
+    imagen_url: str | None = None
     direccion: str | None = None
     barrio: str | None = None
     precio: int | None = None
@@ -77,6 +79,7 @@ class PisoUpdate(BaseModel):
 class PisoOut(BaseModel):
     id: int
     url: str | None
+    imagen_url: str | None
     direccion: str | None
     barrio: str | None
     precio: int | None

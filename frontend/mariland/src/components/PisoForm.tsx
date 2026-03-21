@@ -20,6 +20,7 @@ type FormState = {
   direccion: string
   barrio: string
   url: string
+  imagen_url: string
   precio: string
   habitaciones: string
   banos: string
@@ -47,6 +48,7 @@ export default function PisoForm({ piso, onSave, onClose }: PisoFormProps) {
     direccion: piso?.direccion ?? '',
     barrio: piso?.barrio ?? '',
     url: piso?.url ?? '',
+    imagen_url: piso?.imagen_url ?? '',
     precio: piso?.precio != null ? String(piso.precio) : '',
     habitaciones: piso?.habitaciones != null ? String(piso.habitaciones) : '',
     banos: piso?.banos != null ? String(piso.banos) : '',
@@ -76,6 +78,7 @@ export default function PisoForm({ piso, onSave, onClose }: PisoFormProps) {
         direccion: form.direccion || null,
         barrio: form.barrio || null,
         url: form.url || null,
+        imagen_url: form.imagen_url || null,
         precio: form.precio ? parseInt(form.precio) : null,
         habitaciones: form.habitaciones ? parseInt(form.habitaciones) : null,
         banos: form.banos ? parseInt(form.banos) : null,
@@ -124,6 +127,11 @@ export default function PisoForm({ piso, onSave, onClose }: PisoFormProps) {
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">URL del anuncio</label>
           <input value={form.url} onChange={set('url')} type="url"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">URL de imagen</label>
+          <input value={form.imagen_url} onChange={set('imagen_url')} type="url" placeholder="https://..."
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
         </div>
         <div className="grid grid-cols-3 gap-3">

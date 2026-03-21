@@ -61,3 +61,27 @@ async def test_get_nonexistent_piso(db_session: AsyncSession) -> None:
     repo = SQLAlchemyPisoRepository(db_session)
     fetched = await repo.get_by_id(99999)
     assert fetched is None
+
+
+@pytest.mark.asyncio
+async def test_create_piso_with_imagen_url(db_session: AsyncSession) -> None:
+    repo = SQLAlchemyPisoRepository(db_session)
+
+    piso = await repo.create({"estado": "candidato", "imagen_url": "https://foto.com/1.jpg"})
+
+    assert piso.imagen_url == "https://foto.com/1.jpg"
+
+    fetched = await repo.get_by_id(piso.id)
+    assert fetched is not None
+    assert fetched.imagen_url == "https://foto.com/1.jpg"
+
+
+@pytest.mark.asyncio
+async def test_update_piso_imagen_url(db_session: AsyncSession) -> None:
+    repo = SQLAlchemyPisoRepository(db_session)
+
+    piso = await repo.create({"estado": "candidato"})
+    updated = await repo.update(piso.id, {"imagen_url": "https://nueva.com/img.jpg"})
+
+    assert updated is not None
+    assert updated.imagen_url == "https://nueva.com/img.jpg"

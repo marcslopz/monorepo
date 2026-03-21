@@ -7,6 +7,7 @@ import type { Piso } from '../types/piso'
 const basePiso: Piso = {
   id: 1,
   url: null,
+  imagen_url: null,
   direccion: 'Calle Falsa 123',
   barrio: 'Centre',
   precio: 250000,
@@ -90,5 +91,25 @@ describe('PisoCard', () => {
   it('renders badge for estado agendado', () => {
     renderCard({ estado: 'agendado' })
     expect(screen.getByText('agendado')).toBeInTheDocument()
+  })
+
+  it('renders image banner when imagen_url is set', () => {
+    renderCard({ imagen_url: 'https://example.com/foto.jpg' })
+    const img = screen.getByRole('img', { name: 'Foto del piso' })
+    expect(img).toHaveAttribute('src', 'https://example.com/foto.jpg')
+  })
+
+  it('does not render image banner when imagen_url is null', () => {
+    renderCard({ imagen_url: null })
+    expect(screen.queryByRole('img', { name: 'Foto del piso' })).not.toBeInTheDocument()
+  })
+
+  it('clicking image banner opens image modal', async () => {
+    const user = userEvent.setup()
+    renderCard({ imagen_url: 'https://example.com/foto.jpg' })
+
+    await user.click(screen.getByRole('img', { name: 'Foto del piso' }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 })
