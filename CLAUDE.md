@@ -10,3 +10,7 @@ Los archivos de contexto están en `.ai/`:
 - `.ai/environments.md` — entornos local, producción y CI
 
 Lee estos archivos al inicio de cada sesión para tener contexto del proyecto.
+
+## Reglas críticas
+
+- **NUNCA ejecutar `pnpm`, `uv`, `pytest`, `ruff`, `mypy`, `eslint` directamente en el host.** Usar siempre `make <target> APP=<app>` — los comandos corren dentro de Docker. Ver `.ai/environments.md`.
