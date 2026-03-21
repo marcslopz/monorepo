@@ -8,9 +8,7 @@ from tests.conftest import make_comment, make_piso
 
 
 @pytest.fixture
-def service(
-    mock_piso_repository: AsyncMock, mock_comment_repository: AsyncMock
-) -> CommentService:
+def service(mock_piso_repository: AsyncMock, mock_comment_repository: AsyncMock) -> CommentService:
     return CommentService(
         piso_repository=mock_piso_repository,
         comment_repository=mock_comment_repository,

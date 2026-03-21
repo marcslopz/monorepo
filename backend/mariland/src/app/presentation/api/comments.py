@@ -7,9 +7,7 @@ router = APIRouter(prefix="/pisos", tags=["comments"])
 
 
 @router.post("/{piso_id}/comments", response_model=CommentOut, status_code=201)
-async def add_comment(
-    piso_id: int, data: CommentCreate, service: CommentServiceDep
-) -> CommentOut:
+async def add_comment(piso_id: int, data: CommentCreate, service: CommentServiceDep) -> CommentOut:
     comment = await service.add_comment(piso_id, data.texto)
     return CommentOut.model_validate(comment)
 

@@ -53,9 +53,7 @@ class SQLAlchemyPisoRepository:
         return Piso.model_validate(result.scalar_one())
 
     async def update(self, piso_id: int, data: dict[str, Any]) -> Piso | None:
-        result = await self._session.execute(
-            select(PisoModel).where(PisoModel.id == piso_id)
-        )
+        result = await self._session.execute(select(PisoModel).where(PisoModel.id == piso_id))
         piso = result.scalar_one_or_none()
         if piso is None:
             return None
@@ -73,9 +71,7 @@ class SQLAlchemyPisoRepository:
         return Piso.model_validate(result.scalar_one())
 
     async def delete(self, piso_id: int) -> bool:
-        result = await self._session.execute(
-            select(PisoModel).where(PisoModel.id == piso_id)
-        )
+        result = await self._session.execute(select(PisoModel).where(PisoModel.id == piso_id))
         piso = result.scalar_one_or_none()
         if piso is None:
             return False
