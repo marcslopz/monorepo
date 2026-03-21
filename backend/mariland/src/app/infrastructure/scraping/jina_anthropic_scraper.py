@@ -85,7 +85,7 @@ class JinaAnthropicScraper:
         logger.info(
             "[scraper] Jina response: %d chars, status %d", len(markdown), response.status_code
         )
-        logger.debug("[scraper] Markdown preview (first 1000 chars):\n%s", markdown[:1000])
+        logger.info("[scraper] Jina full content:\n%s", markdown)
         return markdown
 
     async def _extract_fields(self, markdown: str) -> dict[str, Any]:
