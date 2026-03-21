@@ -1,8 +1,12 @@
+import json
+import logging
 from typing import Any
 
 import httpx
 from anthropic import AsyncAnthropic
 from anthropic.types import ToolParam
+
+logger = logging.getLogger(__name__)
 
 EXTRACT_TOOL: ToolParam = {
     "name": "extract_piso",
@@ -63,31 +67,53 @@ class JinaAnthropicScraper:
         self._anthropic = AsyncAnthropic(api_key=anthropic_api_key)
 
     async def scrape_piso(self, url: str) -> dict[str, Any]:
+        logger.info("[scraper] Starting scrape for URL: %s", url)
         markdown = await self._fetch_markdown(url)
         extracted = await self._extract_fields(markdown)
-        return {"url": url, "estado": "candidato", **extracted}
+        result = {"url": url, "estado": "candidato", **extracted}
+        non_null = {k: v for k, v in result.items() if v is not None}
+        logger.info("[scraper] Scrape complete. Extracted fields: %s", list(non_null.keys()))
+        return result
 
     async def _fetch_markdown(self, url: str) -> str:
+        jina_url = f"https://r.jina.ai/{url}"
+        logger.info("[scraper] Fetching markdown from Jina: %s", jina_url)
         async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(
-                f"https://r.jina.ai/{url}",
-                headers={"Accept": "text/markdown"},
-            )
+            response = await client.get(jina_url, headers={"Accept": "text/markdown"})
             response.raise_for_status()
-            return response.text
+        markdown = response.text
+        logger.info(
+            "[scraper] Jina response: %d chars, status %d", len(markdown), response.status_code
+        )
+        logger.debug("[scraper] Markdown preview (first 1000 chars):\n%s", markdown[:1000])
+        return markdown
 
     async def _extract_fields(self, markdown: str) -> dict[str, Any]:
+        input_text = markdown[:8000]
+        logger.info("[scraper] Sending %d chars to Claude Haiku for extraction", len(input_text))
         response = await self._anthropic.messages.create(
             model="claude-haiku-4-5",
             max_tokens=1024,
             system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": markdown[:8000]}],
+            messages=[{"role": "user", "content": input_text}],
             tools=[EXTRACT_TOOL],
             tool_choice={"type": "any"},
+        )
+        logger.info(
+            "[scraper] Claude response: stop_reason=%s, %d content blocks",
+            response.stop_reason,
+            len(response.content),
         )
 
         for block in response.content:
             if block.type == "tool_use" and block.name == "extract_piso":
+                logger.info(
+                    "[scraper] Claude tool_use output:\n%s",
+                    json.dumps(block.input, ensure_ascii=False, indent=2),
+                )
                 return dict(block.input)
 
+        logger.warning(
+            "[scraper] No tool_use block found in Claude response. Content: %s", response.content
+        )
         return {}
