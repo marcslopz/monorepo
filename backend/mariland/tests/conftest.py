@@ -92,7 +92,7 @@ def mock_comment_repository() -> AsyncMock:
 
 def _db_url() -> str:
     return os.environ.get(
-        "DATABASE_URL",
+        "MARILAND_DATABASE_URL",
         "postgresql+asyncpg://appuser:apppassword@postgres:5432/mariland_db",
     )
 

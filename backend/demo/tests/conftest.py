@@ -45,7 +45,7 @@ def mock_cache() -> AsyncMock:
 
 def _db_url() -> str:
     return os.environ.get(
-        "DATABASE_URL",
+        "DEMO_DATABASE_URL",
         "postgresql+asyncpg://appuser:apppassword@postgres:5432/demo_db",
     )
 
