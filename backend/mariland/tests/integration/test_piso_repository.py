@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.persistence.repositories.sqlalchemy_piso_repository import (
+from mariland.infrastructure.persistence.repositories.sqlalchemy_piso_repository import (
     SQLAlchemyPisoRepository,
 )
 

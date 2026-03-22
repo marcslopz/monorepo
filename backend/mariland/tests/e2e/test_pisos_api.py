@@ -3,12 +3,12 @@ from unittest.mock import AsyncMock
 import pytest
 from httpx import AsyncClient
 
-from app.application.services.comment_service import CommentService
-from app.application.services.piso_service import PisoService
-from app.application.services.price_service import PriceService
-from app.domain.exceptions import NotFoundError
-from app.main import app
-from app.presentation.dependencies import get_comment_service, get_piso_service, get_price_service
+from mariland.application.services.comment_service import CommentService
+from mariland.application.services.piso_service import PisoService
+from mariland.application.services.price_service import PriceService
+from mariland.domain.exceptions import NotFoundError
+from mariland.main import app
+from mariland.presentation.dependencies import get_comment_service, get_piso_service, get_price_service
 from tests.conftest import make_comment, make_piso, make_price_history
 
 

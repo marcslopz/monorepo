@@ -85,7 +85,7 @@ format:
 	docker compose exec $(APP)-backend $(VENV)/ruff format src tests
 
 typecheck:
-	docker compose exec $(APP)-backend $(VENV)/mypy -p app
+	docker compose exec $(APP)-backend $(VENV)/mypy -p $(APP)
 
 check: lint typecheck
 

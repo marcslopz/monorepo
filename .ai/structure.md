@@ -11,12 +11,16 @@ monorepo/
 ├── backend/
 │   ├── demo/                       # Demo app (items CRUD + JWT auth + Redis cache)
 │   ├── mariland/                   # Mariland app (pisos tracker)
+│   ├── gateway/                    # Production-only: mounts demo + mariland under /demo and /mariland
+│   │   ├── Dockerfile              # Build context: repo root; installs both apps
+│   │   ├── pyproject.toml
+│   │   └── src/gateway/main.py
 │   └── <app>/
 │       ├── Dockerfile              # dev + production stages
 │       ├── prestart.sh             # ensure DB + alembic upgrade head (dev only, volume-mounted)
 │       ├── pyproject.toml          # uv deps + ruff/mypy config (app-level)
 │       ├── alembic/                # Migrations
-│       └── src/app/
+│       └── src/<app>/             # Package named after the app (demo or mariland)
 │           ├── config.py           # pydantic-settings
 │           ├── main.py             # FastAPI app + lifespan
 │           ├── domain/

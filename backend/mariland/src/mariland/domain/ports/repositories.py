@@ -1,0 +1,29 @@
+from typing import Any, Protocol
+
+from mariland.domain.models.comment import Comment
+from mariland.domain.models.piso import Piso
+from mariland.domain.models.price_history import PriceHistory
+
+
+class PisoRepository(Protocol):
+    async def get_by_id(self, piso_id: int) -> Piso | None: ...
+
+    async def list_all(self) -> list[Piso]: ...
+
+    async def create(self, data: dict[str, Any]) -> Piso: ...
+
+    async def update(self, piso_id: int, data: dict[str, Any]) -> Piso | None: ...
+
+    async def delete(self, piso_id: int) -> bool: ...
+
+
+class PriceHistoryRepository(Protocol):
+    async def add(self, piso_id: int, precio: int, notas: str | None) -> PriceHistory: ...
+
+    async def delete(self, piso_id: int, price_id: int) -> bool: ...
+
+
+class CommentRepository(Protocol):
+    async def add(self, piso_id: int, texto: str) -> Comment: ...
+
+    async def delete(self, piso_id: int, comment_id: int) -> bool: ...

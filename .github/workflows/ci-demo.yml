@@ -49,7 +49,7 @@ jobs:
       - name: Lint
         run: uv run ruff check src tests
       - name: Type check
-        run: uv run mypy -p app
+        run: uv run mypy -p demo
       - name: Test
         env:
           DATABASE_URL: postgresql+asyncpg://appuser:apppassword@localhost:5432/demo_db

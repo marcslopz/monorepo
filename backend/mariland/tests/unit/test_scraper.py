@@ -3,8 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.domain.exceptions import ScrapingError
-from app.infrastructure.scraping.llm_scraper import LlmScraper
+from mariland.domain.exceptions import ScrapingError
+from mariland.infrastructure.scraping.llm_scraper import LlmScraper
 
 
 def make_tool_use_block(input_data: dict[str, Any]) -> MagicMock:

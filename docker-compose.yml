@@ -16,7 +16,7 @@ services:
     environment:
       DATABASE_URL: ${DEMO_DATABASE_URL:-postgresql+asyncpg://appuser:apppassword@postgres:5432/demo_db}
       CORS_ORIGINS: ${DEMO_CORS_ORIGINS:-http://localhost:5173}
-    command: uv run uvicorn src.app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uv run uvicorn src.demo.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       postgres:
         condition: service_healthy

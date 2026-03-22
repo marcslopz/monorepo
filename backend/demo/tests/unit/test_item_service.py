@@ -3,8 +3,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.application.services.item_service import ItemService
-from app.domain.exceptions import NotFoundError
+from demo.application.services.item_service import ItemService
+from demo.domain.exceptions import NotFoundError
 from tests.conftest import make_item
 
 

@@ -8,11 +8,11 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.domain.models.comment import Comment
-from app.domain.models.piso import Piso
-from app.domain.models.price_history import PriceHistory
-from app.infrastructure.persistence.database import Base
-from app.main import app
+from mariland.domain.models.comment import Comment
+from mariland.domain.models.piso import Piso
+from mariland.domain.models.price_history import PriceHistory
+from mariland.infrastructure.persistence.database import Base
+from mariland.main import app
 
 # ── Shared helpers ─────────────────────────────────────────────────────────────
 

@@ -2,8 +2,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.application.services.price_service import PriceService
-from app.domain.exceptions import NotFoundError
+from mariland.application.services.price_service import PriceService
+from mariland.domain.exceptions import NotFoundError
 from tests.conftest import make_piso, make_price_history
 
 

@@ -4,9 +4,9 @@ from unittest.mock import AsyncMock
 import pytest
 from httpx import AsyncClient
 
-from app.application.services.item_service import ItemService
-from app.main import app
-from app.presentation.dependencies import get_item_service
+from demo.application.services.item_service import ItemService
+from demo.main import app
+from demo.presentation.dependencies import get_item_service
 from tests.conftest import make_item
 
 
@@ -73,7 +73,7 @@ async def test_get_item(async_client: AsyncClient, mock_service: AsyncMock) -> N
 
 @pytest.mark.asyncio
 async def test_get_item_not_found(async_client: AsyncClient, mock_service: AsyncMock) -> None:
-    from app.domain.exceptions import NotFoundError
+    from demo.domain.exceptions import NotFoundError
 
     mock_service.get_item.side_effect = NotFoundError("Item", str(uuid.uuid4()))
 

@@ -2,8 +2,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.application.services.comment_service import CommentService
-from app.domain.exceptions import NotFoundError
+from mariland.application.services.comment_service import CommentService
+from mariland.domain.exceptions import NotFoundError
 from tests.conftest import make_comment, make_piso
 
 
