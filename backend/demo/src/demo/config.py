@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -5,7 +6,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # Database
-    database_url: str = "postgresql+asyncpg://appuser:apppassword@postgres:5432/appdb"
+    database_url: str = Field(
+        "postgresql+asyncpg://appuser:apppassword@postgres:5432/appdb",
+        validation_alias="DEMO_DATABASE_URL",
+    )
 
     # Auth
     jwt_secret: str = "change-me-in-production"
@@ -15,7 +19,10 @@ class Settings(BaseSettings):
     # App
     environment: str = "development"
     log_level: str = "INFO"
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = Field(
+        "http://localhost:5173",
+        validation_alias="DEMO_CORS_ORIGINS",
+    )
 
     @property
     def cors_origins_list(self) -> list[str]:
