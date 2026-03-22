@@ -39,7 +39,10 @@ def get_comment_service(session: SessionDep) -> CommentService:
 
 
 def get_scraper() -> JinaAnthropicScraper:
-    return JinaAnthropicScraper(anthropic_api_key=settings.anthropic_api_key)
+    return JinaAnthropicScraper(
+        anthropic_api_key=settings.anthropic_api_key,
+        jina_api_key=settings.jina_api_key,
+    )
 
 
 PisoServiceDep = Annotated[PisoService, Depends(get_piso_service)]

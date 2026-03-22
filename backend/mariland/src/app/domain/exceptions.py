@@ -11,3 +11,7 @@ class NotFoundError(DomainError):
 
 class ValidationError(DomainError):
     pass
+
+
+class ScrapingError(DomainError):
+    pass

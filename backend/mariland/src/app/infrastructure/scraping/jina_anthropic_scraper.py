@@ -6,7 +6,11 @@ import httpx
 from anthropic import AsyncAnthropic
 from anthropic.types import ToolParam
 
+from app.domain.exceptions import ScrapingError
+
 logger = logging.getLogger(__name__)
+
+MIN_CONTENT_CHARS = 2000
 
 EXTRACT_TOOL: ToolParam = {
     "name": "extract_piso",
@@ -63,8 +67,9 @@ SYSTEM_PROMPT = (
 
 
 class JinaAnthropicScraper:
-    def __init__(self, anthropic_api_key: str) -> None:
+    def __init__(self, anthropic_api_key: str, jina_api_key: str = "") -> None:
         self._anthropic = AsyncAnthropic(api_key=anthropic_api_key)
+        self._jina_api_key = jina_api_key
 
     async def scrape_piso(self, url: str) -> dict[str, Any]:
         logger.info("[scraper] Starting scrape for URL: %s", url)
@@ -78,14 +83,31 @@ class JinaAnthropicScraper:
     async def _fetch_markdown(self, url: str) -> str:
         jina_url = f"https://r.jina.ai/{url}"
         logger.info("[scraper] Fetching markdown from Jina: %s", jina_url)
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(jina_url, headers={"Accept": "text/markdown"})
+        headers: dict[str, str] = {
+            "Accept": "text/markdown",
+            "X-Timeout": "30",
+        }
+        if self._jina_api_key:
+            headers["Authorization"] = f"Bearer {self._jina_api_key}"
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(jina_url, headers=headers)
             response.raise_for_status()
         markdown = response.text
         logger.info(
             "[scraper] Jina response: %d chars, status %d", len(markdown), response.status_code
         )
         logger.info("[scraper] Jina full content:\n%s", markdown)
+        if len(markdown) < MIN_CONTENT_CHARS:
+            logger.warning(
+                "[scraper] Insufficient content from Jina (%d chars < %d). "
+                "Possible bot block or empty page.",
+                len(markdown),
+                MIN_CONTENT_CHARS,
+            )
+            raise ScrapingError(
+                f"No se ha podido obtener información de la URL ({len(markdown)} chars). "
+                "El portal puede estar bloqueando el acceso automático."
+            )
         return markdown
 
     async def _extract_fields(self, markdown: str) -> dict[str, Any]:

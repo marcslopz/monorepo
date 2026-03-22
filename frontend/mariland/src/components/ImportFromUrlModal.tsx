@@ -24,8 +24,18 @@ export default function ImportFromUrlModal({ onImported, onClose }: ImportFromUr
         onImported(piso)
         onClose()
       }
-    } catch {
-      setError('No se ha podido importar el piso. Comprueba el enlace e inténtalo de nuevo.')
+    } catch (e) {
+      let message = 'No se ha podido importar el piso. Comprueba el enlace e inténtalo de nuevo.'
+      if (e instanceof Error) {
+        const match = e.message.match(/^\d+: (.+)$/)
+        if (match) {
+          try {
+            const body = JSON.parse(match[1]) as { detail?: string }
+            if (body.detail) message = body.detail
+          } catch { /* use default message */ }
+        }
+      }
+      setError(message)
     } finally {
       setLoading(false)
     }
