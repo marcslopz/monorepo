@@ -2,11 +2,11 @@ import json
 import logging
 from typing import Any
 
-import httpx
 from anthropic import AsyncAnthropic
 from anthropic.types import ToolParam
 
 from app.domain.exceptions import ScrapingError
+from app.domain.ports.fetcher import UrlFetcherPort
 
 logger = logging.getLogger(__name__)
 
@@ -66,52 +66,36 @@ SYSTEM_PROMPT = (
 )
 
 
-class JinaAnthropicScraper:
-    def __init__(self, anthropic_api_key: str, jina_api_key: str = "") -> None:
+class LlmScraper:
+    def __init__(self, fetcher: UrlFetcherPort, anthropic_api_key: str) -> None:
+        self._fetcher = fetcher
         self._anthropic = AsyncAnthropic(api_key=anthropic_api_key)
-        self._jina_api_key = jina_api_key
 
     async def scrape_piso(self, url: str) -> dict[str, Any]:
         logger.info("[scraper] Starting scrape for URL: %s", url)
-        markdown = await self._fetch_markdown(url)
-        extracted = await self._extract_fields(markdown)
+        content = await self._fetcher.fetch_content(url)
+        logger.info("[scraper] Fetcher returned %d chars", len(content))
+        logger.info("[scraper] Full content:\n%s", content)
+
+        if len(content) < MIN_CONTENT_CHARS:
+            logger.warning(
+                "[scraper] Insufficient content (%d chars < %d). Possible bot block or empty page.",
+                len(content),
+                MIN_CONTENT_CHARS,
+            )
+            raise ScrapingError(
+                f"No se ha podido obtener información de la URL ({len(content)} chars). "
+                "El portal puede estar bloqueando el acceso automático."
+            )
+
+        extracted = await self._extract_fields(content)
         result = {"url": url, "estado": "candidato", **extracted}
         non_null = {k: v for k, v in result.items() if v is not None}
         logger.info("[scraper] Scrape complete. Extracted fields: %s", list(non_null.keys()))
         return result
 
-    async def _fetch_markdown(self, url: str) -> str:
-        jina_url = f"https://r.jina.ai/{url}"
-        logger.info("[scraper] Fetching markdown from Jina: %s", jina_url)
-        headers: dict[str, str] = {
-            "Accept": "text/markdown",
-            "X-Timeout": "30",
-        }
-        if self._jina_api_key:
-            headers["Authorization"] = f"Bearer {self._jina_api_key}"
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.get(jina_url, headers=headers)
-            response.raise_for_status()
-        markdown = response.text
-        logger.info(
-            "[scraper] Jina response: %d chars, status %d", len(markdown), response.status_code
-        )
-        logger.info("[scraper] Jina full content:\n%s", markdown)
-        if len(markdown) < MIN_CONTENT_CHARS:
-            logger.warning(
-                "[scraper] Insufficient content from Jina (%d chars < %d). "
-                "Possible bot block or empty page.",
-                len(markdown),
-                MIN_CONTENT_CHARS,
-            )
-            raise ScrapingError(
-                f"No se ha podido obtener información de la URL ({len(markdown)} chars). "
-                "El portal puede estar bloqueando el acceso automático."
-            )
-        return markdown
-
-    async def _extract_fields(self, markdown: str) -> dict[str, Any]:
-        input_text = markdown[:8000]
+    async def _extract_fields(self, content: str) -> dict[str, Any]:
+        input_text = content[:8000]
         logger.info("[scraper] Sending %d chars to Claude Haiku for extraction", len(input_text))
         response = await self._anthropic.messages.create(
             model="claude-haiku-4-5",

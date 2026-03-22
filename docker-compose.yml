@@ -56,6 +56,7 @@ services:
       CORS_ORIGINS: ${MARILAND_CORS_ORIGINS:-http://localhost:5174}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       JINA_API_KEY: ${JINA_API_KEY:-}
+      SCRAPINGBEE_API_KEY: ${SCRAPINGBEE_API_KEY:-}
     command: sh prestart.sh
     depends_on:
       postgres:

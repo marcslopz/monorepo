@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5174"
     anthropic_api_key: str = ""
     jina_api_key: str = ""
+    scrapingbee_api_key: str = ""
 
     @property
     def cors_origins_list(self) -> list[str]:

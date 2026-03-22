@@ -17,7 +17,10 @@ from app.infrastructure.persistence.repositories.sqlalchemy_piso_repository impo
 from app.infrastructure.persistence.repositories.sqlalchemy_price_repository import (
     SQLAlchemyPriceHistoryRepository,
 )
-from app.infrastructure.scraping.jina_anthropic_scraper import JinaAnthropicScraper
+from app.domain.ports.fetcher import UrlFetcherPort
+from app.infrastructure.scraping.jina_fetcher import JinaFetcher
+from app.infrastructure.scraping.llm_scraper import LlmScraper
+from app.infrastructure.scraping.scrapingbee_fetcher import ScrapingBeeFetcher
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
@@ -38,14 +41,16 @@ def get_comment_service(session: SessionDep) -> CommentService:
     return CommentService(piso_repository=piso_repo, comment_repository=comment_repo)
 
 
-def get_scraper() -> JinaAnthropicScraper:
-    return JinaAnthropicScraper(
-        anthropic_api_key=settings.anthropic_api_key,
-        jina_api_key=settings.jina_api_key,
-    )
+def get_scraper() -> LlmScraper:
+    fetcher: UrlFetcherPort
+    if settings.scrapingbee_api_key:
+        fetcher = ScrapingBeeFetcher(api_key=settings.scrapingbee_api_key)
+    else:
+        fetcher = JinaFetcher(api_key=settings.jina_api_key)
+    return LlmScraper(fetcher=fetcher, anthropic_api_key=settings.anthropic_api_key)
 
 
 PisoServiceDep = Annotated[PisoService, Depends(get_piso_service)]
 PriceServiceDep = Annotated[PriceService, Depends(get_price_service)]
 CommentServiceDep = Annotated[CommentService, Depends(get_comment_service)]
-ScraperDep = Annotated[JinaAnthropicScraper, Depends(get_scraper)]
+ScraperDep = Annotated[LlmScraper, Depends(get_scraper)]
