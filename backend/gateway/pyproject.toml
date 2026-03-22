@@ -4,9 +4,13 @@ version = "0.1.0"
 description = "Gateway — single Render service routing /demo and /mariland"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.32.0",
+    "demo",
+    "mariland",
 ]
+
+[tool.uv.sources]
+demo = { workspace = true }
+mariland = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

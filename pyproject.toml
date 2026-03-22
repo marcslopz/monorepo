@@ -10,6 +10,8 @@ packages = []
 members = [
     "backend/shared",
     "backend/demo",
+    "backend/mariland",
+    "backend/gateway",
 ]
 
 [tool.ruff]
@@ -22,7 +24,7 @@ ignore = ["ANN401"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["ANN"]
-"src/app/infrastructure/auth/**" = ["B008"]
+"src/demo/infrastructure/auth/**" = ["B008"]
 
 [tool.mypy]
 python_version = "3.12"
