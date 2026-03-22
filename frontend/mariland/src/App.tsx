@@ -4,6 +4,7 @@ import CommentModal from './components/CommentModal'
 import DeleteModal from './components/DeleteModal'
 import ExtrasModal from './components/ExtrasModal'
 import Filters from './components/Filters'
+import ImportFromUrlModal from './components/ImportFromUrlModal'
 import PisoCard from './components/PisoCard'
 import PisoForm from './components/PisoForm'
 import PriceModal from './components/PriceModal'
@@ -11,9 +12,10 @@ import Stats from './components/Stats'
 import { usePisos } from './hooks/usePisos'
 
 export default function App() {
-  const { pisos, loading, error, createPiso, updatePiso, deletePiso, addComment, deleteComment, addPrice, deletePrice } = usePisos()
+  const { pisos, loading, error, createPiso, prependPiso, updatePiso, deletePiso, addComment, deleteComment, addPrice, deletePrice } = usePisos()
 
   const [showForm, setShowForm] = useState(false)
+  const [showImportUrl, setShowImportUrl] = useState(false)
   const [editPiso, setEditPiso] = useState<Piso | null>(null)
   const [deletingPiso, setDeletingPiso] = useState<Piso | null>(null)
   const [commentPiso, setCommentPiso] = useState<Piso | null>(null)
@@ -70,12 +72,20 @@ export default function App() {
               <h1 className="text-2xl font-bold text-gray-900">🏠 Mariland</h1>
               <p className="text-sm text-gray-500">Sant Boi de Llobregat</p>
             </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm"
-            >
-              + Añadir piso
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowImportUrl(true)}
+                className="rounded-xl border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 shadow-sm"
+              >
+                Importar URL
+              </button>
+              <button
+                onClick={() => setShowForm(true)}
+                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm"
+              >
+                + Añadir piso
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -121,6 +131,12 @@ export default function App() {
         </div>
       </main>
 
+      {showImportUrl && (
+        <ImportFromUrlModal
+          onImported={prependPiso}
+          onClose={() => setShowImportUrl(false)}
+        />
+      )}
       {showForm && <PisoForm onSave={handleCreate} onClose={() => setShowForm(false)} />}
       {editPiso && (
         <PisoForm

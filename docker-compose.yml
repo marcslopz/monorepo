@@ -54,6 +54,9 @@ services:
     environment:
       DATABASE_URL: ${MARILAND_DATABASE_URL:-postgresql+asyncpg://appuser:apppassword@postgres:5432/mariland_db}
       CORS_ORIGINS: ${MARILAND_CORS_ORIGINS:-http://localhost:5174}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      JINA_API_KEY: ${JINA_API_KEY:-}
+      SCRAPINGBEE_API_KEY: ${SCRAPINGBEE_API_KEY:-}
     command: sh prestart.sh
     depends_on:
       postgres:
@@ -84,7 +87,6 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
       - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appuser} -d ${DEMO_POSTGRES_DB:-demo_db}"]
@@ -92,5 +94,3 @@ services:
       timeout: 5s
       retries: 5
 
-volumes:
-  postgres_data:

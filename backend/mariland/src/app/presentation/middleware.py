@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
-from app.domain.exceptions import NotFoundError, ValidationError
+from app.domain.exceptions import NotFoundError, ScrapingError, ValidationError
 
 
 def add_cors_middleware(app: FastAPI) -> None:
@@ -26,6 +26,13 @@ def add_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(ValidationError)
     async def validation_error_handler(request: Request, exc: ValidationError) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(ScrapingError)
+    async def scraping_error_handler(request: Request, exc: ScrapingError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content={"detail": str(exc)},

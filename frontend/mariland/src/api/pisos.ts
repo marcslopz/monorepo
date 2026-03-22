@@ -5,6 +5,7 @@ export const pisosApi = {
   list: () => apiClient.get<Piso[]>('/pisos/'),
   get: (id: number) => apiClient.get<Piso>(`/pisos/${id}`),
   create: (data: PisoCreate) => apiClient.post<Piso>('/pisos/', data),
+  importFromUrl: (url: string) => apiClient.post<Piso>('/pisos/from-url', { url }),
   update: (id: number, data: PisoUpdate) => apiClient.put<Piso>(`/pisos/${id}`, data),
   delete: (id: number) => apiClient.delete<void>(`/pisos/${id}`),
 }

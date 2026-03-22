@@ -32,6 +32,10 @@ class CommentOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class PisoFromUrlRequest(BaseModel):
+    url: str
+
+
 class PisoCreate(BaseModel):
     url: str | None = None
     imagen_url: str | None = None

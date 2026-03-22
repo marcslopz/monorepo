@@ -1,9 +1,23 @@
 from fastapi import APIRouter
 
-from app.presentation.dependencies import PisoServiceDep
-from app.presentation.schemas.piso_schemas import PisoCreate, PisoOut, PisoUpdate
+from app.presentation.dependencies import PisoServiceDep, ScraperDep
+from app.presentation.schemas.piso_schemas import (
+    PisoCreate,
+    PisoFromUrlRequest,
+    PisoOut,
+    PisoUpdate,
+)
 
 router = APIRouter(prefix="/pisos", tags=["pisos"])
+
+
+@router.post("/from-url", response_model=PisoOut, status_code=201)
+async def create_piso_from_url(
+    data: PisoFromUrlRequest, scraper: ScraperDep, service: PisoServiceDep
+) -> PisoOut:
+    piso_data = await scraper.scrape_piso(data.url)
+    piso = await service.create_piso(piso_data)
+    return PisoOut.model_validate(piso)
 
 
 @router.get("/", response_model=list[PisoOut])
