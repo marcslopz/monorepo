@@ -7,6 +7,7 @@ from app.application.services.comment_service import CommentService
 from app.application.services.piso_service import PisoService
 from app.application.services.price_service import PriceService
 from app.config import settings
+from app.domain.ports.fetcher import UrlFetcherPort
 from app.infrastructure.persistence.database import get_session
 from app.infrastructure.persistence.repositories.sqlalchemy_comment_repository import (
     SQLAlchemyCommentRepository,
@@ -17,7 +18,6 @@ from app.infrastructure.persistence.repositories.sqlalchemy_piso_repository impo
 from app.infrastructure.persistence.repositories.sqlalchemy_price_repository import (
     SQLAlchemyPriceHistoryRepository,
 )
-from app.domain.ports.fetcher import UrlFetcherPort
 from app.infrastructure.scraping.jina_fetcher import JinaFetcher
 from app.infrastructure.scraping.llm_scraper import LlmScraper
 from app.infrastructure.scraping.scrapingbee_fetcher import ScrapingBeeFetcher
