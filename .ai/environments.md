@@ -15,15 +15,15 @@
 |----------|------------|-------------------|------------------------------------------|
 | demo     | Frontend   | Cloudflare Pages  | https://monorepo-c00.pages.dev           |
 | mariland | Frontend   | Cloudflare Pages  | https://mariland.pages.dev               |
-| gateway  | Backend    | Render            | (configurar en Render con el nuevo servicio) |
+| gateway  | Backend    | Render            | https://gateway-8ij4.onrender.com            |
 | demo     | Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
 | mariland | Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
 
 **Nota**: Los dos backends (demo y mariland) están unificados en un único servicio Render `gateway`.
-- demo backend: `<gateway-url>/demo/api/v1/*`
-- mariland backend: `<gateway-url>/mariland/api/*`
+- demo backend: `https://gateway-8ij4.onrender.com/demo/api/v1/*`
+- mariland backend: `https://gateway-8ij4.onrender.com/mariland/api/*`
 - Dockerfile del gateway: `backend/gateway/Dockerfile` (build context: raíz del repo)
-- Frontends: `VITE_API_BASE_URL=<gateway-url>/demo` y `VITE_MARILAND_API_BASE_URL=<gateway-url>/mariland`
+- Frontends: `VITE_API_BASE_URL=https://gateway-8ij4.onrender.com/demo` y `VITE_MARILAND_API_BASE_URL=https://gateway-8ij4.onrender.com/mariland`
 
 **Notes**:
 - Render free tier pauses on inactivity (~30s cold start)
