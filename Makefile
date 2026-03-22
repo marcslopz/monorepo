@@ -62,6 +62,10 @@ shell-backend:
 shell-frontend:
 	docker compose exec $(APP)-frontend sh
 
+# Workspace
+lock:
+	docker run --rm -v $(PWD):/app -w /app python:3.12-slim sh -c "pip install uv -q && uv lock"
+
 # Database
 VENV = /opt/venv/bin
 
@@ -85,7 +89,7 @@ format:
 	docker compose exec $(APP)-backend $(VENV)/ruff format src tests
 
 typecheck:
-	docker compose exec $(APP)-backend $(VENV)/mypy -p app
+	docker compose exec $(APP)-backend $(VENV)/mypy -p $(APP)
 
 check: lint typecheck
 

@@ -2,8 +2,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.application.services.piso_service import PisoService
-from app.domain.exceptions import NotFoundError
+from mariland.application.services.piso_service import PisoService
+from mariland.domain.exceptions import NotFoundError
 from tests.conftest import make_piso
 
 

@@ -9,9 +9,9 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.domain.models.item import Item
-from app.infrastructure.persistence.database import Base
-from app.main import app
+from demo.domain.models.item import Item
+from demo.infrastructure.persistence.database import Base
+from demo.main import app
 
 # ── Shared helpers ─────────────────────────────────────────────────────────────
 
@@ -45,7 +45,7 @@ def mock_cache() -> AsyncMock:
 
 def _db_url() -> str:
     return os.environ.get(
-        "DATABASE_URL",
+        "DEMO_DATABASE_URL",
         "postgresql+asyncpg://appuser:apppassword@postgres:5432/demo_db",
     )
 

@@ -14,9 +14,9 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: ${DEMO_DATABASE_URL:-postgresql+asyncpg://appuser:apppassword@postgres:5432/demo_db}
-      CORS_ORIGINS: ${DEMO_CORS_ORIGINS:-http://localhost:5173}
-    command: uv run uvicorn src.app.main:app --host 0.0.0.0 --port 8000 --reload
+      DEMO_DATABASE_URL: ${DEMO_DATABASE_URL:-postgresql+asyncpg://appuser:apppassword@postgres:5432/demo_db}
+      DEMO_CORS_ORIGINS: ${DEMO_CORS_ORIGINS:-http://localhost:5173}
+    command: uv run uvicorn src.demo.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       postgres:
         condition: service_healthy
@@ -52,8 +52,8 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: ${MARILAND_DATABASE_URL:-postgresql+asyncpg://appuser:apppassword@postgres:5432/mariland_db}
-      CORS_ORIGINS: ${MARILAND_CORS_ORIGINS:-http://localhost:5174}
+      MARILAND_DATABASE_URL: ${MARILAND_DATABASE_URL:-postgresql+asyncpg://appuser:apppassword@postgres:5432/mariland_db}
+      MARILAND_CORS_ORIGINS: ${MARILAND_CORS_ORIGINS:-http://localhost:5174}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       JINA_API_KEY: ${JINA_API_KEY:-}
       SCRAPINGBEE_API_KEY: ${SCRAPINGBEE_API_KEY:-}

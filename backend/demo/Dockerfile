@@ -18,7 +18,7 @@ ENV PYTHONPATH="/app/src"
 
 EXPOSE 8000
 
-CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "src.demo.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 # ── Production stage ───────────────────────────────────────────────────────────
 FROM base AS production
@@ -34,4 +34,4 @@ ENV PYTHONPATH="/app/src"
 
 EXPOSE 8000
 
-CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["uvicorn", "src.demo.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

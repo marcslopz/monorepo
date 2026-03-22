@@ -45,16 +45,16 @@ jobs:
       - name: Lint
         run: uv run ruff check src tests
       - name: Type check
-        run: uv run mypy -p app
+        run: uv run mypy -p mariland
       - name: Run migrations
         env:
-          DATABASE_URL: postgresql+asyncpg://appuser:apppassword@localhost:5432/mariland_db
+          MARILAND_DATABASE_URL: postgresql+asyncpg://appuser:apppassword@localhost:5432/mariland_db
         run: uv run alembic upgrade head
       - name: Test
         env:
-          DATABASE_URL: postgresql+asyncpg://appuser:apppassword@localhost:5432/mariland_db
+          MARILAND_DATABASE_URL: postgresql+asyncpg://appuser:apppassword@localhost:5432/mariland_db
           ENVIRONMENT: test
-          CORS_ORIGINS: http://localhost:5174
+          MARILAND_CORS_ORIGINS: http://localhost:5174
         run: uv run pytest tests/ -v
 
   frontend:

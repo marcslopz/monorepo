@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.persistence.repositories.sqlalchemy_item_repository import (
+from demo.infrastructure.persistence.repositories.sqlalchemy_item_repository import (
     SQLAlchemyItemRepository,
 )
 

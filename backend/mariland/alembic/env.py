@@ -4,10 +4,10 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from app.infrastructure.persistence.database import Base, _build_engine_url
+from mariland.infrastructure.persistence.database import Base, _build_engine_url
 
 # Import all models so Alembic can detect them
-import app.infrastructure.persistence.models  # noqa: F401
+import mariland.infrastructure.persistence.models  # noqa: F401
 
 config = context.config
 _db_url, _db_connect_args = _build_engine_url()
