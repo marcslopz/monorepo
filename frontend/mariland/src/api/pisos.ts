@@ -1,11 +1,15 @@
-import type { Comment, CommentCreate, Piso, PisoCreate, PisoUpdate, PriceHistory, PriceHistoryCreate } from '../types/piso'
+import type { Comment, CommentCreate, Piso, PisoCreate, PisoUpdate, PriceHistory, PriceHistoryCreate, SseEvent } from '../types/piso'
 import { apiClient } from './client'
+import { fetchSSE } from './sse'
+
+const BASE = (import.meta.env.VITE_MARILAND_API_BASE_URL ?? '') + '/api'
 
 export const pisosApi = {
   list: () => apiClient.get<Piso[]>('/pisos/'),
   get: (id: number) => apiClient.get<Piso>(`/pisos/${id}`),
   create: (data: PisoCreate) => apiClient.post<Piso>('/pisos/', data),
-  importFromUrl: (url: string) => apiClient.post<Piso>('/pisos/from-url', { url }),
+  importFromUrlStream: (url: string, onEvent: (event: SseEvent) => void, signal?: AbortSignal) =>
+    fetchSSE(`${BASE}/pisos/from-url`, { url }, (data) => onEvent(data as SseEvent), signal),
   update: (id: number, data: PisoUpdate) => apiClient.put<Piso>(`/pisos/${id}`, data),
   delete: (id: number) => apiClient.delete<void>(`/pisos/${id}`),
 }

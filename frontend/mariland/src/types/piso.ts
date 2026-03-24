@@ -64,6 +64,11 @@ export interface PisoCreate {
 
 export type PisoUpdate = PisoCreate
 
+export type SseProgressEvent = { type: 'progress'; step: string; message: string }
+export type SseDoneEvent = { type: 'done'; piso: Piso }
+export type SseErrorEvent = { type: 'error'; step: string; message: string }
+export type SseEvent = SseProgressEvent | SseDoneEvent | SseErrorEvent
+
 export interface PriceHistoryCreate {
   precio: number
   notas?: string | null

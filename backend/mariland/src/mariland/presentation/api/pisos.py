@@ -1,4 +1,7 @@
+from collections.abc import AsyncGenerator
+
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 
 from mariland.presentation.dependencies import PisoServiceDep, ScraperDep
 from mariland.presentation.schemas.piso_schemas import (
@@ -7,17 +10,32 @@ from mariland.presentation.schemas.piso_schemas import (
     PisoOut,
     PisoUpdate,
 )
+from mariland.presentation.schemas.sse_events import DoneEvent, ErrorEvent, ProgressEvent
 
 router = APIRouter(prefix="/pisos", tags=["pisos"])
 
 
-@router.post("/from-url", response_model=PisoOut, status_code=201)
+@router.post("/from-url")
 async def create_piso_from_url(
     data: PisoFromUrlRequest, scraper: ScraperDep, service: PisoServiceDep
-) -> PisoOut:
-    piso_data = await scraper.scrape_piso(data.url)
-    piso = await service.create_piso(piso_data)
-    return PisoOut.model_validate(piso)
+) -> StreamingResponse:
+    async def event_stream() -> AsyncGenerator[str, None]:
+        async for event in scraper.scrape_piso_stream(data.url):
+            if isinstance(event, DoneEvent):
+                try:
+                    saving = ProgressEvent(step="saving", message="Guardando piso...")
+                    yield f"data: {saving.model_dump_json()}\n\n"
+                    piso = await service.create_piso(event.piso)
+                    piso_out = PisoOut.model_validate(piso)
+                    done = DoneEvent(piso=piso_out.model_dump(mode="json"))
+                    yield f"data: {done.model_dump_json()}\n\n"
+                except Exception as exc:
+                    error = ErrorEvent(step="saving", message=str(exc))
+                    yield f"data: {error.model_dump_json()}\n\n"
+            else:
+                yield f"data: {event.model_dump_json()}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @router.get("/", response_model=list[PisoOut])

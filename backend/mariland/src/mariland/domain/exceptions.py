@@ -15,3 +15,11 @@ class ValidationError(DomainError):
 
 class ScrapingError(DomainError):
     pass
+
+
+class FetchError(ScrapingError):
+    pass
+
+
+class ExtractionError(ScrapingError):
+    pass
