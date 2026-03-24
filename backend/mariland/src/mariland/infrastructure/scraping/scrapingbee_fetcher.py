@@ -3,6 +3,8 @@ import re
 
 import httpx
 
+from mariland.domain.exceptions import FetchError
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,9 +34,29 @@ class ScrapingBeeFetcher:
         }
 
         logger.info("[fetcher:scrapingbee] Fetching: %s", url)
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.get(self._BASE_URL, params=params)
-            response.raise_for_status()
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                response = await client.get(self._BASE_URL, params=params)
+                response.raise_for_status()
+        except httpx.TimeoutException as exc:
+            logger.error("[fetcher:scrapingbee] Timeout fetching %s: %s", url, exc)
+            raise FetchError(
+                f"Timeout al obtener la página ({url}). El portal tardó demasiado en responder."
+            ) from exc
+        except httpx.HTTPStatusError as exc:
+            logger.error(
+                "[fetcher:scrapingbee] HTTP %d fetching %s: %s",
+                exc.response.status_code,
+                url,
+                exc,
+            )
+            raise FetchError(
+                f"Error HTTP {exc.response.status_code} al obtener la página ({url}). "
+                "El portal puede estar bloqueando el acceso automático."
+            ) from exc
+        except httpx.HTTPError as exc:
+            logger.error("[fetcher:scrapingbee] HTTP error fetching %s: %s", url, exc)
+            raise FetchError(f"Error de red al obtener la página ({url}): {exc}") from exc
 
         content = _html_to_text(response.text)
         logger.info(
