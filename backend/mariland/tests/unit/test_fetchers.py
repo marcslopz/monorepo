@@ -15,7 +15,7 @@ async def test_scrapingbee_fetcher_timeout_raises_fetch_error() -> None:
     fetcher = ScrapingBeeFetcher(api_key="test-key")
     with (
         patch("httpx.AsyncClient.get", new=AsyncMock(side_effect=httpx.ReadTimeout("timeout"))),
-        pytest.raises(FetchError, match="Timeout"),
+        pytest.raises(FetchError, match="No se pudo obtener"),
     ):
         await fetcher.fetch_content("https://idealista.com/inmueble/1")
 
@@ -64,7 +64,7 @@ async def test_jina_fetcher_timeout_raises_fetch_error() -> None:
     fetcher = JinaFetcher()
     with (
         patch("httpx.AsyncClient.get", new=AsyncMock(side_effect=httpx.ReadTimeout("timeout"))),
-        pytest.raises(FetchError, match="Timeout"),
+        pytest.raises(FetchError, match="No se pudo obtener"),
     ):
         await fetcher.fetch_content("https://fotocasa.es/piso/1")
 

@@ -28,7 +28,8 @@ class JinaFetcher:
         except httpx.TimeoutException as exc:
             logger.error("[fetcher:jina] Timeout fetching %s: %s", url, exc)
             raise FetchError(
-                f"Timeout al obtener la página ({url}). El portal tardó demasiado en responder."
+                f"No se pudo obtener la página ({url}). "
+                "El portal tardó demasiado o está bloqueando el acceso automático."
             ) from exc
         except httpx.HTTPStatusError as exc:
             logger.error(
