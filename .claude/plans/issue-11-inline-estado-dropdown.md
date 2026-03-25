@@ -40,7 +40,7 @@ Es un cambio **solo de frontend**. El backend ya soporta actualizar solo el camp
 - [x] 4. Integrar `EstadoDropdown` en `PisoCard` (reemplazar badge estatico)
 - [x] 5. Pasar callback `onEstadoChange` desde `App.tsx` a `PisoCard`
 - [x] 6. Ejecutar linters y tests
-- [ ] 7. Verificar manualmente en el navegador
+- [x] 7. Verificar manualmente en el navegador
 
 ## Verificacion
 
