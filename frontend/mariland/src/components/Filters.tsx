@@ -1,4 +1,4 @@
-const ESTADOS = ['candidato', 'contactado', 'agendado', 'visitado', 'descartado', 'oferta', 'comprado']
+import { ESTADOS } from '../utils/estadoUtils'
 
 interface FiltersProps {
   search: string

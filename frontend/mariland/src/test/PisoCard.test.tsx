@@ -39,6 +39,7 @@ function renderCard(overrides: Partial<Piso> = {}) {
     onComments: vi.fn(),
     onPrices: vi.fn(),
     onExtras: vi.fn(),
+    onEstadoChange: vi.fn(),
   }
   render(<PisoCard {...props} />)
   return props

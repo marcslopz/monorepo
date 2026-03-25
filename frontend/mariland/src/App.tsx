@@ -126,6 +126,7 @@ export default function App() {
               onComments={() => setCommentPiso(piso)}
               onPrices={() => setPricePiso(piso)}
               onExtras={() => setExtrasPiso(piso)}
+              onEstadoChange={(id, estado) => updatePiso(id, { estado })}
             />
           ))}
         </div>
