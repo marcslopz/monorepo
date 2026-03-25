@@ -1,17 +1,8 @@
 import { useState } from 'react'
 import type { Piso, PriceHistory } from '../types/piso'
 import ActionMenu from './ActionMenu'
+import EstadoDropdown from './EstadoDropdown'
 import ImagenModal from './ImagenModal'
-
-const ESTADO_COLORS: Record<string, string> = {
-  candidato: 'bg-blue-100 text-blue-700',
-  contactado: 'bg-orange-100 text-orange-700',
-  agendado: 'bg-teal-100 text-teal-700',
-  visitado: 'bg-purple-100 text-purple-700',
-  descartado: 'bg-gray-100 text-gray-500',
-  oferta: 'bg-yellow-100 text-yellow-700',
-  comprado: 'bg-green-100 text-green-700',
-}
 
 const CERT_COLORS: Record<string, string> = {
   A: 'bg-green-600', B: 'bg-green-400', C: 'bg-yellow-400',
@@ -40,9 +31,10 @@ interface PisoCardProps {
   onComments: () => void
   onPrices: () => void
   onExtras: () => void
+  onEstadoChange: (id: number, estado: string) => void
 }
 
-export default function PisoCard({ piso, onEdit, onDelete, onComments, onPrices, onExtras }: PisoCardProps) {
+export default function PisoCard({ piso, onEdit, onDelete, onComments, onPrices, onExtras, onEstadoChange }: PisoCardProps) {
   const [showImagenModal, setShowImagenModal] = useState(false)
   const variation = priceVariation(piso)
   const precioM2 = piso.precio && piso.metros ? Math.round(piso.precio / piso.metros) : null
@@ -77,9 +69,7 @@ export default function PisoCard({ piso, onEdit, onDelete, onComments, onPrices,
               {piso.certificacion_energetica}
             </span>
           )}
-          <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${ESTADO_COLORS[piso.estado] ?? 'bg-gray-100 text-gray-600'}`}>
-            {piso.estado}
-          </span>
+          <EstadoDropdown pisoId={piso.id} estado={piso.estado} onEstadoChange={onEstadoChange} />
           <ActionMenu
             onEdit={onEdit}
             onDelete={onDelete}
