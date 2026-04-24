@@ -77,6 +77,44 @@ services:
       - mariland-backend
     profiles: [mariland, all]
 
+  # ── Abacus app ───────────────────────────────────────────────────────────────
+  abacus-backend:
+    build:
+      context: ./backend/abacus
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - ./backend/abacus/src:/app/src
+      - ./backend/abacus/tests:/app/tests
+      - ./backend/abacus/alembic:/app/alembic
+      - ./backend/abacus/prestart.sh:/app/prestart.sh
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env
+    environment:
+      ABACUS_DATABASE_URL: ${ABACUS_DATABASE_URL:-postgresql+asyncpg://appuser:apppassword@postgres:5432/abacus_db}
+      ABACUS_CORS_ORIGINS: ${ABACUS_CORS_ORIGINS:-http://localhost:5175}
+    command: sh prestart.sh
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: [abacus, all]
+
+  abacus-frontend:
+    build:
+      context: ./frontend/abacus
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend/abacus/src:/app/src
+    ports:
+      - "5175:5175"
+    env_file:
+      - .env
+    depends_on:
+      - abacus-backend
+    profiles: [abacus, all]
+
   # ── Shared infrastructure ─────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine

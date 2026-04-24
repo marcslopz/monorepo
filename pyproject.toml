@@ -11,6 +11,7 @@ members = [
     "backend/shared",
     "backend/demo",
     "backend/mariland",
+    "backend/abacus",
     "backend/gateway",
 ]
 
@@ -25,6 +26,7 @@ ignore = ["ANN401"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["ANN"]
 "src/demo/infrastructure/auth/**" = ["B008"]
+"src/abacus/infrastructure/auth/**" = ["B008"]
 
 [tool.mypy]
 python_version = "3.12"

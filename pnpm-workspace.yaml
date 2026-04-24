@@ -2,3 +2,4 @@ packages:
   - 'frontend/shared'
   - 'frontend/demo'
   - 'frontend/mariland'
+  - 'frontend/abacus'
