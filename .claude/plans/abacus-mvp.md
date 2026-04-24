@@ -95,9 +95,9 @@ Rama: `feature/abacus-mvp-v0`
 - [x] `src/main.tsx`, `src/index.css`
 
 ### Fase 15: Deploy
-- [ ] Neon DB: crear schema `abacus` en la DB de producción
-- [ ] Render gateway: añadir env vars ABACUS_DATABASE_URL, ABACUS_CORS_ORIGINS, ABACUS_JWKS_URL, ABACUS_JWT_AUDIENCE
-- [ ] Cloudflare Pages: nuevo proyecto `abacus` con build `cd frontend/abacus && pnpm install && pnpm build`, output `frontend/abacus/dist`, env VITE_ABACUS_API_BASE_URL=https://gateway-8ij4.onrender.com/abacus
+- [x] Neon DB: crear schema `abacus` en la DB de producción
+- [x] Render gateway: añadir env vars ABACUS_DATABASE_URL, ABACUS_CORS_ORIGINS, ABACUS_JWKS_URL, ABACUS_JWT_AUDIENCE
+- [x] Cloudflare Pages: nuevo proyecto `abacus` con build `cd frontend/abacus && pnpm install && pnpm build`, output `frontend/abacus/dist`, env VITE_ABACUS_API_BASE_URL=https://gateway-8ij4.onrender.com/abacus
 
 ### Fase 16: Documentación
 - [x] `.ai/structure.md` — añadir abacus
