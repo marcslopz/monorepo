@@ -6,7 +6,7 @@ import type { AssetCreate } from '../types/models'
 interface Props {
   assets: Asset[]
   onSubmit: (data: TransactionCreate) => Promise<void>
-  onAddAsset: (data: AssetCreate) => Promise<void>
+  onAddAsset: (data: AssetCreate) => Promise<Asset>
 }
 
 export default function TransactionForm({ assets, onSubmit, onAddAsset }: Props) {
