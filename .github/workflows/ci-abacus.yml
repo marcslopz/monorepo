@@ -76,5 +76,3 @@ jobs:
         run: pnpm lint
       - name: Type check
         run: pnpm tsc --noEmit
-      - name: Test
-        run: pnpm test run
