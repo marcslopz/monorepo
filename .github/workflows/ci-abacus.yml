@@ -1,0 +1,80 @@
+name: CI — abacus
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/abacus/**'
+      - 'frontend/abacus/**'
+      - '.github/workflows/ci-abacus.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/abacus/**'
+      - 'frontend/abacus/**'
+      - '.github/workflows/ci-abacus.yml'
+
+jobs:
+  backend:
+    name: Backend — lint & test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: appuser
+          POSTGRES_PASSWORD: apppassword
+          POSTGRES_DB: abacus_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: backend/abacus
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: latest
+      - name: Install dependencies
+        run: uv sync --extra dev
+      - name: Lint
+        run: uv run ruff check src tests
+      - name: Type check
+        run: uv run mypy -p abacus
+      - name: Run migrations
+        env:
+          ABACUS_DATABASE_URL: postgresql+asyncpg://appuser:apppassword@localhost:5432/abacus_db
+        run: uv run alembic upgrade head
+      - name: Test
+        env:
+          ABACUS_DATABASE_URL: postgresql+asyncpg://appuser:apppassword@localhost:5432/abacus_db
+          ABACUS_CORS_ORIGINS: http://localhost:5175
+        run: uv run pytest tests/ -v
+
+  frontend:
+    name: Frontend — lint & typecheck & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/abacus
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: pnpm install --ignore-workspace
+      - name: Lint
+        run: pnpm lint
+      - name: Type check
+        run: pnpm tsc --noEmit
+      - name: Test
+        run: pnpm test run

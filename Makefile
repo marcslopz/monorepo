@@ -3,7 +3,7 @@ APP ?= demo
 
 .PHONY: help build dev stop clean logs shell-backend shell-frontend \
         migrate migrate-create test test-unit test-integration test-e2e test-frontend \
-        lint lint-fix lint-frontend format typecheck check check-all
+        lint lint-fix lint-frontend typecheck-frontend format typecheck check check-all
 
 help:
 	@echo "Usage: make <target> [APP=<app>]"
@@ -27,6 +27,7 @@ help:
 	@echo "  lint               ruff check on backend/APP"
 	@echo "  lint-fix           ruff check --fix on backend/APP"
 	@echo "  lint-frontend      eslint on frontend/APP"
+	@echo "  typecheck-frontend tsc --noEmit on frontend/APP"
 	@echo "  format             ruff format on backend/APP"
 	@echo "  typecheck          mypy on backend/APP"
 	@echo "  check              lint + typecheck (backend)"
@@ -85,6 +86,9 @@ lint-fix:
 lint-frontend:
 	docker compose exec $(APP)-frontend pnpm lint
 
+typecheck-frontend:
+	docker compose exec $(APP)-frontend pnpm tsc --noEmit
+
 format:
 	docker compose exec $(APP)-backend $(VENV)/ruff format src tests
 
@@ -93,7 +97,7 @@ typecheck:
 
 check: lint typecheck
 
-check-all: lint typecheck lint-frontend
+check-all: lint typecheck lint-frontend typecheck-frontend
 
 # Tests
 test:
