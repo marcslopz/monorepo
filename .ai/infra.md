@@ -20,6 +20,7 @@ All services live in **Frankfurt / eu-central-1**.
 |----------|-----------|-----------|
 | demo     | `demo`    | ✅ created |
 | mariland | `mariland`| ✅ created |
+| abacus   | `abacus`  | ✅ created |
 
 ---
 
@@ -61,11 +62,22 @@ One **Web Service** per backend app. Config: Docker, Frankfurt, free plan.
 | `CORS_ORIGINS` | Cloudflare Pages URL |
 | `ENVIRONMENT` | `production` |
 
+**abacus** (auth via Neon Auth JWT/JWKS — pendiente de activar)
+| Var | Value |
+|-----|-------|
+| `ABACUS_DATABASE_URL` | Neon connection string (asyncpg) |
+| `ABACUS_CORS_ORIGINS` | `https://abacus-6zj.pages.dev` |
+| `ABACUS_JWKS_URL` | *(vacío hasta activar Neon Auth)* |
+| `ABACUS_JWT_AUDIENCE` | *(vacío hasta activar Neon Auth)* |
+
+> **Nota abacus**: el gateway monta abacus en `/abacus`. El schema de PostgreSQL (`abacus`) lo crea Alembic automáticamente en el primer deploy via `CREATE SCHEMA IF NOT EXISTS abacus` en `alembic/env.py`.
+
 ### Apps
 | App      | Render service URL | Status |
 |----------|--------------------|--------|
 | demo     | https://demo-backend-5b1n.onrender.com | ✅ live |
 | mariland | https://mariland-backend.onrender.com  | ✅ live |
+| abacus   | https://gateway-8ij4.onrender.com/abacus | ✅ live (via gateway) |
 
 > **Note**: Render free tier pauses on inactivity (~30s cold start on first request).
 
@@ -98,14 +110,22 @@ Build output:    frontend/mariland/dist
 ```
 > No `--frozen-lockfile` — mariland does not commit a lock file.
 
+**abacus**
+```
+Build command:   cd frontend/abacus && pnpm install --ignore-workspace && pnpm build
+Build output:    frontend/abacus/dist
+```
+
 ### Env vars per app
 | App      | Var | Value |
 |----------|-----|-------|
-| demo     | `VITE_API_BASE_URL` | Render backend URL |
-| mariland | `VITE_MARILAND_API_BASE_URL` | Render backend URL |
+| demo     | `VITE_API_BASE_URL` | `https://gateway-8ij4.onrender.com/demo` |
+| mariland | `VITE_MARILAND_API_BASE_URL` | `https://gateway-8ij4.onrender.com/mariland` |
+| abacus   | `VITE_ABACUS_API_BASE_URL` | `https://gateway-8ij4.onrender.com/abacus` |
 
 ### Apps
 | App      | Cloudflare Pages URL | Status |
 |----------|----------------------|--------|
 | demo     | https://monorepo-c00.pages.dev | ✅ live |
 | mariland | https://mariland.pages.dev | ✅ live |
+| abacus   | https://abacus-6zj.pages.dev | ✅ live |

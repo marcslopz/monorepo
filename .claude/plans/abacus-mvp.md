@@ -100,9 +100,9 @@ Rama: `feature/abacus-mvp-v0`
 - [ ] Cloudflare Pages: nuevo proyecto `abacus` con build `cd frontend/abacus && pnpm install && pnpm build`, output `frontend/abacus/dist`, env VITE_ABACUS_API_BASE_URL=https://gateway-8ij4.onrender.com/abacus
 
 ### Fase 16: Documentación
-- [ ] `.ai/structure.md` — añadir abacus
-- [ ] `.ai/environments.md` — puertos 8002/5175, URLs prod, nota Neon Auth
-- [ ] `.ai/infra.md` — Neon schema, Cloudflare Pages, Render env vars
+- [x] `.ai/structure.md` — añadir abacus
+- [x] `.ai/environments.md` — puertos 8002/5175, URLs prod, nota Neon Auth
+- [x] `.ai/infra.md` — Neon schema, Cloudflare Pages, Render env vars
 
 ## Notas técnicas importantes
 - **Alembic + schema**: `env.py` usa `connectable.begin()` antes de Alembic para crear `CREATE SCHEMA IF NOT EXISTS abacus`, porque Alembic necesita el schema para crear su tabla `alembic_version`. Sin esto, el primer `alembic upgrade head` falla silenciosamente o con error.

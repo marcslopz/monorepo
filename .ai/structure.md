@@ -11,7 +11,7 @@ monorepo/
 ├── backend/
 │   ├── demo/                       # Demo app (items CRUD + JWT auth + Redis cache)
 │   ├── mariland/                   # Mariland app (pisos tracker)
-│   ├── gateway/                    # Production-only: mounts demo + mariland under /demo and /mariland
+│   ├── gateway/                    # Production-only: mounts demo + mariland + abacus under path prefixes
 │   │   ├── Dockerfile              # Build context: repo root; installs both apps
 │   │   ├── pyproject.toml
 │   │   └── src/gateway/main.py
