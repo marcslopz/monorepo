@@ -6,11 +6,13 @@ requires-python = ">=3.12"
 dependencies = [
     "demo",
     "mariland",
+    "abacus",
 ]
 
 [tool.uv.sources]
 demo = { workspace = true }
 mariland = { workspace = true }
+abacus = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

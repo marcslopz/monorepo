@@ -13,3 +13,10 @@ WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mariland_db')\gexec
 
 SELECT 'CREATE DATABASE mariland_db_test'
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mariland_db_test')\gexec
+
+-- Abacus app
+SELECT 'CREATE DATABASE abacus_db'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'abacus_db')\gexec
+
+SELECT 'CREATE DATABASE abacus_db_test'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'abacus_db_test')\gexec
