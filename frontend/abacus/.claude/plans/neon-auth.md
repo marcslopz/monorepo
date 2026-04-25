@@ -64,8 +64,8 @@ El backend **no necesita cambios de código** significativos — solo env vars y
 
 ## Fase 5: Docs
 
-- [ ] Actualizar `.ai/infra.md` — marcar auth como activo, documentar env vars finales
-- [ ] Actualizar `.ai/environments.md` — añadir `VITE_NEON_AUTH_URL`
+- [x] Actualizar `.ai/infra.md` — marcar auth como activo, documentar env vars finales
+- [x] Actualizar `.ai/environments.md` — añadir `VITE_NEON_AUTH_URL`
 
 ## Notas técnicas
 
