@@ -27,13 +27,11 @@ function NeonAuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    void authClient!.getSession().then(async (result) => {
-      if (result.data) {
-        const jwt = await authClient!.getJWTToken()
-        if (jwt) {
-          localStorage.setItem('abacus_token', jwt)
-          setToken(jwt)
-        }
+    void authClient!.getSession().then((result) => {
+      if (result.data?.session?.token) {
+        const sessionToken = result.data.session.token
+        localStorage.setItem('abacus_token', sessionToken)
+        setToken(sessionToken)
       } else {
         localStorage.removeItem('abacus_token')
         setToken(null)

@@ -22,7 +22,8 @@ export async function request<T>(
   })
 
   if (res.status === 401 && authClient) {
-    const jwt = await authClient.getJWTToken?.()
+    const result = await authClient.getSession()
+    const jwt = result.data?.session?.token
     if (jwt) {
       localStorage.setItem('abacus_token', jwt)
       const retry = await fetch(`${BASE}${path}`, {
