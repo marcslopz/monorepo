@@ -1,8 +1,8 @@
 import uuid
 
+import jwt
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import jwt
 
 from abacus.config import settings
 from abacus.infrastructure.auth.jwks import JWKSClient
