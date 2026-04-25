@@ -28,7 +28,7 @@
 - Dockerfile del gateway: `backend/gateway/Dockerfile` (build context: raíz del repo)
 - Frontends: `VITE_API_BASE_URL=https://gateway-8ij4.onrender.com/demo`, `VITE_MARILAND_API_BASE_URL=https://gateway-8ij4.onrender.com/mariland`, `VITE_ABACUS_API_BASE_URL=https://gateway-8ij4.onrender.com/abacus`
 
-**Auth (abacus)**: `ABACUS_JWKS_URL` vacío → auth desactivado (dev bypass con UUID fijo). Cuando se active Neon Auth, añadir `ABACUS_JWKS_URL` y `ABACUS_JWT_AUDIENCE` en Render.
+**Auth (abacus)**: `ABACUS_JWKS_URL` vacío → auth desactivado (dev bypass con UUID fijo). En producción: `ABACUS_JWKS_URL` y `ABACUS_JWT_AUDIENCE` en Render, `VITE_NEON_AUTH_URL` en Cloudflare Pages.
 
 **Notes**:
 - Render free tier pauses on inactivity (~30s cold start)

@@ -62,13 +62,13 @@ One **Web Service** per backend app. Config: Docker, Frankfurt, free plan.
 | `CORS_ORIGINS` | Cloudflare Pages URL |
 | `ENVIRONMENT` | `production` |
 
-**abacus** (auth via Neon Auth JWT/JWKS — pendiente de activar)
+**abacus** (auth via Neon Auth JWT/JWKS)
 | Var | Value |
 |-----|-------|
 | `ABACUS_DATABASE_URL` | Neon connection string (asyncpg) |
 | `ABACUS_CORS_ORIGINS` | `https://abacus-6zj.pages.dev` |
-| `ABACUS_JWKS_URL` | *(vacío hasta activar Neon Auth)* |
-| `ABACUS_JWT_AUDIENCE` | *(vacío hasta activar Neon Auth)* |
+| `ABACUS_JWKS_URL` | `<neon-auth-base-url>/.well-known/jwks.json` |
+| `ABACUS_JWT_AUDIENCE` | verificar del primer JWT real en jwt.io (puede estar vacío si Neon no incluye `aud`) |
 
 > **Nota abacus**: el gateway monta abacus en `/abacus`. El schema de PostgreSQL (`abacus`) lo crea Alembic automáticamente en el primer deploy via `CREATE SCHEMA IF NOT EXISTS abacus` en `alembic/env.py`.
 
@@ -122,6 +122,7 @@ Build output:    frontend/abacus/dist
 | demo     | `VITE_API_BASE_URL` | `https://gateway-8ij4.onrender.com/demo` |
 | mariland | `VITE_MARILAND_API_BASE_URL` | `https://gateway-8ij4.onrender.com/mariland` |
 | abacus   | `VITE_ABACUS_API_BASE_URL` | `https://gateway-8ij4.onrender.com/abacus` |
+| abacus   | `VITE_NEON_AUTH_URL` | `<neon-auth-base-url>` |
 
 ### Apps
 | App      | Cloudflare Pages URL | Status |
