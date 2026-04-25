@@ -55,8 +55,8 @@ El backend **no necesita cambios de código** significativos — solo env vars y
 - [x] Añadir `VITE_NEON_AUTH_URL=` en la sección Abacus
 
 ### 3.2 Producción (manual)
-- [ ] **Cloudflare Pages**: `VITE_NEON_AUTH_URL=<auth-base-url>`
-- [ ] **Render**: `ABACUS_JWKS_URL=<auth-base-url>/.well-known/jwks.json`, `ABACUS_JWT_AUDIENCE=<verificar del JWT>`
+- [x] **Cloudflare Pages**: `VITE_NEON_AUTH_URL=https://ep-proud-bar-agzyxlwq.neonauth.c-2.eu-central-1.aws.neon.tech/demo/auth`
+- [x] **Render**: `ABACUS_JWKS_URL=.../demo/auth/.well-known/jwks.json`, `ABACUS_JWT_AUDIENCE=https://ep-proud-bar-agzyxlwq.neonauth.c-2.eu-central-1.aws.neon.tech`
 
 ## Fase 4: Tests
 
