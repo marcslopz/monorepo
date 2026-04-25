@@ -27,12 +27,12 @@ class JWKSClient:
         last_error: Exception = JWTError("No keys available")
         for key in keys:
             try:
-                payload: dict[str, str] = jwt.decode(
-                    token,
-                    key,
-                    algorithms=["RS256"],
-                    audience=self._audience,
-                )
+                decode_kwargs: dict[str, object] = {"algorithms": ["RS256"]}
+                if self._audience:
+                    decode_kwargs["audience"] = self._audience
+                else:
+                    decode_kwargs["options"] = {"verify_aud": False}
+                payload: dict[str, str] = jwt.decode(token, key, **decode_kwargs)
                 if "sub" not in payload:
                     raise JWTError("Missing 'sub' claim")
                 # Validate sub is a valid UUID
