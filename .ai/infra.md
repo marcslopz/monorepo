@@ -5,6 +5,43 @@ All services live in **Frankfurt / eu-central-1**.
 
 ---
 
+## Neon Auth (Google OAuth para nuevas apps)
+
+Neon free tier tiene **una sola instancia de Auth por proyecto**, ligada a la base `demo`.
+Todas las apps del monorepo comparten esa instancia (`/demo/auth`). Los usuarios se
+almacenan en las tablas de auth de `demo`, pero los JWTs son válidos para cualquier app.
+
+### Añadir auth a una nueva app
+
+**1. Google Cloud Console** — crear nuevo OAuth 2.0 Client ID:
+1. APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID
+2. Tipo: **Web application**
+3. Authorized JavaScript origins: dominio de Cloudflare Pages de la nueva app (y dominio de preview si se va a testear en ramas)
+4. Authorized redirect URI: `https://ep-proud-bar-agzyxlwq.neonauth.c-2.eu-central-1.aws.neon.tech/demo/auth/callback/google`
+5. Guardar → anotar **Client ID** y **Client Secret**
+
+> El OAuth consent screen ya está configurado — no hace falta tocarlo. Solo hay que añadir el nuevo dominio en "Authorized domains" si es diferente a los existentes.
+
+**2. Neon Console** — en Auth → Google OAuth, **añadir** el nuevo Client ID y Secret
+(o reusar los mismos si Google lo permite para múltiples dominios — en ese caso solo actualizar los authorized origins en GCP)
+
+**3. Backend** — usar `PyJWT[cryptography]` + `JWKSClient` de abacus como referencia:
+- `JWKS_URL`: `https://ep-proud-bar-agzyxlwq.neonauth.c-2.eu-central-1.aws.neon.tech/demo/auth/.well-known/jwks.json`
+- `JWT_AUDIENCE`: `https://ep-proud-bar-agzyxlwq.neonauth.c-2.eu-central-1.aws.neon.tech`
+- Algoritmo: **EdDSA** (no RS256)
+
+**4. Frontend** — copiar patrón de `frontend/abacus/src/auth/`:
+- `neonAuth.ts` — `createAuthClient(VITE_NEON_AUTH_URL)`
+- `AuthContext.tsx` — dual-mode Neon/dev, `getSession()` → `session.token` → localStorage
+- `VITE_NEON_AUTH_URL`: `https://ep-proud-bar-agzyxlwq.neonauth.c-2.eu-central-1.aws.neon.tech/demo/auth`
+
+**5. Cloudflare Pages** — añadir `VITE_NEON_AUTH_URL` en **All environments**
+
+> **Nota**: `session.token` del cliente de Neon Auth es directamente el JWT firmado con EdDSA.
+> `getJWTToken()` existe en runtime pero da 404 — no usarlo.
+
+---
+
 ## Neon (PostgreSQL)
 
 **Project**: `monorepo` (single project, one DB per app)
