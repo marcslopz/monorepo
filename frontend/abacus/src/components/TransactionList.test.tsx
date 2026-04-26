@@ -8,7 +8,16 @@ vi.mock('../api/transactions', () => ({
   getAvailableBuys: vi.fn().mockResolvedValue({ available_buys: [] }),
 }))
 
-const ASSET: Asset = { id: 'a1', name: 'Apple Inc.', ticker: 'AAPL', currency: 'USD', asset_class: 'stock' }
+const ASSET: Asset = {
+  id: 'a1',
+  name: 'Apple Inc.',
+  ticker: 'AAPL',
+  isin: null,
+  currency: 'USD',
+  asset_class: 'stock',
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
+}
 
 const BUY_TX: Transaction = {
   id: 'tx1',
@@ -20,6 +29,9 @@ const BUY_TX: Transaction = {
   currency: 'USD',
   date: '2024-01-01',
   broker: null,
+  notes: null,
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
   realized_pnl: null,
   realized_pnl_pct: null,
   cost_basis: null,
@@ -37,6 +49,9 @@ const SELL_TX: Transaction = {
   currency: 'USD',
   date: '2024-06-01',
   broker: null,
+  notes: null,
+  created_at: '2024-06-01T00:00:00Z',
+  updated_at: '2024-06-01T00:00:00Z',
   realized_pnl: '148.50',
   realized_pnl_pct: '20.33',
   cost_basis: '730.50',

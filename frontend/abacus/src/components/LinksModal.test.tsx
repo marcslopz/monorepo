@@ -21,6 +21,29 @@ const SELL: Transaction = {
   currency: 'USD',
   date: '2024-06-01',
   broker: null,
+  notes: null,
+  created_at: '2024-06-01T00:00:00Z',
+  updated_at: '2024-06-01T00:00:00Z',
+  realized_pnl: null,
+  realized_pnl_pct: null,
+  cost_basis: null,
+  unlinked_quantity: null,
+  links: [],
+}
+
+const BUY_TX: Transaction = {
+  id: 'buy1',
+  asset_id: 'a1',
+  type: 'buy',
+  quantity: '10',
+  price_per_unit: '150',
+  fee: '1',
+  currency: 'USD',
+  date: '2024-01-01',
+  broker: null,
+  notes: null,
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
   realized_pnl: null,
   realized_pnl_pct: null,
   cost_basis: null,
@@ -29,22 +52,7 @@ const SELL: Transaction = {
 }
 
 const BUY_ENTRY = {
-  buy: {
-    id: 'buy1',
-    asset_id: 'a1',
-    type: 'buy' as const,
-    quantity: '10',
-    price_per_unit: '150',
-    fee: '1',
-    currency: 'USD',
-    date: '2024-01-01',
-    broker: null,
-    realized_pnl: null,
-    realized_pnl_pct: null,
-    cost_basis: null,
-    unlinked_quantity: null,
-    links: [],
-  },
+  buy: BUY_TX,
   qty_available: '10',
   qty_linked: '0',
 }
@@ -55,7 +63,7 @@ describe('LinksModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockGetAvailableBuys.mockResolvedValue({ available_buys: [BUY_ENTRY] })
+    mockGetAvailableBuys.mockResolvedValue({ sell: SELL, available_buys: [BUY_ENTRY] })
   })
 
   it('renders header with sell info', () => {
@@ -71,7 +79,7 @@ describe('LinksModal', () => {
   })
 
   it('shows empty state when no buys available', async () => {
-    mockGetAvailableBuys.mockResolvedValue({ available_buys: [] })
+    mockGetAvailableBuys.mockResolvedValue({ sell: SELL, available_buys: [] })
     render(<LinksModal sell={SELL} onSave={onSave} onClose={onClose} />)
     await waitFor(() => {
       expect(screen.getByText(/No hay compras disponibles/)).toBeInTheDocument()

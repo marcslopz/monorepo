@@ -44,11 +44,11 @@ class TransactionService:
         buys = await self._tx_repo.list_by_ids(list(buy_ids), user_id)
         buys_by_id = {b.id: b for b in buys}
 
-        result = []
+        result: list[tuple[Transaction, list[TransactionLink], RealizedPnL | None]] = []
         for tx in transactions:
             if tx.type == TransactionType.SELL:
                 links = links_by_sell.get(tx.id, [])
-                pnl = compute_pnl(tx, links, buys_by_id)
+                pnl: RealizedPnL | None = compute_pnl(tx, links, buys_by_id)
                 result.append((tx, links, pnl))
             else:
                 result.append((tx, [], None))
@@ -167,9 +167,9 @@ class TransactionService:
 
     async def compute_summary_by_asset(
         self, user_id: uuid.UUID
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         enriched, _ = await self.list_transactions_enriched(user_id, limit=1000, offset=0)
-        summaries: dict[uuid.UUID, dict] = {}
+        summaries: dict[uuid.UUID, dict[str, Any]] = {}
         for tx, _links, pnl in enriched:
             if tx.type != TransactionType.SELL or pnl is None:
                 continue

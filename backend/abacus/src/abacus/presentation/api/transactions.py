@@ -1,7 +1,9 @@
 import uuid
+from collections.abc import Sequence
 
 from fastapi import APIRouter, HTTPException, Query
 
+from abacus.application.services.pnl import RealizedPnL
 from abacus.domain.exceptions import LinkValidationError, NotFoundError
 from abacus.presentation.dependencies import CurrentUser, TransactionServiceDep
 from abacus.presentation.schemas.transaction_schemas import (
@@ -18,7 +20,9 @@ from abacus.presentation.schemas.transaction_schemas import (
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
 
-def _enrich(tx: object, links: list, pnl: object | None) -> TransactionOut:
+def _enrich(
+    tx: object, links: Sequence[object], pnl: RealizedPnL | None
+) -> TransactionOut:
     tx_out = TransactionOut.model_validate(tx)
     if pnl is not None:
         tx_out.realized_pnl = pnl.pnl
