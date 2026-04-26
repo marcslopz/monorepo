@@ -23,3 +23,7 @@ class StockSearchUnavailableError(DomainError):
 
 class ExternalServiceError(DomainError):
     pass
+
+
+class LinkValidationError(DomainError):
+    pass

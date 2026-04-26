@@ -1,14 +1,29 @@
+import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { useAssets } from '../hooks/useAssets'
+import { useAssetSummary } from '../hooks/useAssetSummary'
 import { useTransactions } from '../hooks/useTransactions'
+import AssetSummary from './AssetSummary'
 import TransactionForm from './TransactionForm'
 import TransactionList from './TransactionList'
 
 export default function Dashboard() {
   const { logout } = useAuth()
   const { assets, loading: assetsLoading, addAsset } = useAssets()
-  const { transactions, total, loading: txLoading, hasMore, addTransaction, loadMore } =
+  const [summaryKey, setSummaryKey] = useState(0)
+  const { summaries, loading: summaryLoading } = useAssetSummary(summaryKey)
+  const { transactions, total, loading: txLoading, hasMore, addTransaction, updateLinks, loadMore } =
     useTransactions()
+
+  const handleAddTransaction = async (data: Parameters<typeof addTransaction>[0]) => {
+    await addTransaction(data)
+    setSummaryKey(k => k + 1)
+  }
+
+  const handleUpdateLinks = async (sellId: string, links: [string, string][]) => {
+    await updateLinks(sellId, links)
+    setSummaryKey(k => k + 1)
+  }
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -33,10 +48,12 @@ export default function Dashboard() {
         ) : (
           <TransactionForm
             assets={assets}
-            onSubmit={addTransaction}
+            onSubmit={handleAddTransaction}
             onAddAsset={addAsset}
           />
         )}
+
+        <AssetSummary summaries={summaries} loading={summaryLoading} />
 
         <TransactionList
           transactions={transactions}
@@ -45,6 +62,7 @@ export default function Dashboard() {
           hasMore={hasMore}
           loading={txLoading}
           onLoadMore={loadMore}
+          onUpdateLinks={handleUpdateLinks}
         />
       </main>
     </div>
