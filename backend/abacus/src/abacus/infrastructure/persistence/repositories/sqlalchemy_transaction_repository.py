@@ -72,7 +72,10 @@ class SQLAlchemyTransactionRepository:
         result = await self._session.execute(stmt)
         rows = result.all()
         return [
-            (Transaction.model_validate(row.TransactionModel), row.quantity - row.linked_qty)
+            (
+                Transaction.model_validate(row.TransactionModel),
+                row.TransactionModel.quantity - row.linked_qty,
+            )
             for row in rows
         ]
 
