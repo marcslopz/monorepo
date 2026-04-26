@@ -51,6 +51,7 @@ export interface StockProfile {
   ticker: string
   name: string
   currency: string
+  isin: string | null
 }
 
 export interface TransactionCreate {

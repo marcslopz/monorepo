@@ -42,6 +42,7 @@ export default function AssetModal({ onSave, onClose }: Props) {
       if (profile) {
         setName(profile.name)
         setCurrency(profile.currency)
+        if (profile.isin) setIsin(profile.isin)
       }
     } finally {
       setLoadingProfile(false)

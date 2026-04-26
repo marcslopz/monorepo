@@ -69,7 +69,12 @@ class FinnhubStockSearchClient:
 
         data = resp.json()
         profile = (
-            StockProfile(ticker=symbol, name=data["name"], currency=data["currency"])
+            StockProfile(
+                ticker=symbol,
+                name=data["name"],
+                currency=data["currency"],
+                isin=data.get("isin") or None,
+            )
             if data.get("name") and data.get("currency")
             else None
         )

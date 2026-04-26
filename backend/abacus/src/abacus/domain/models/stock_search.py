@@ -13,3 +13,4 @@ class StockProfile(BaseModel):
     ticker: str
     name: str
     currency: str
+    isin: str | None = None
