@@ -5,10 +5,12 @@ import AssetModal from './AssetModal'
 
 vi.mock('../api/assets', () => ({
   searchAssets: vi.fn(),
+  getAssetProfile: vi.fn(),
 }))
 
-import { searchAssets } from '../api/assets'
+import { getAssetProfile, searchAssets } from '../api/assets'
 const mockSearch = vi.mocked(searchAssets)
+const mockGetProfile = vi.mocked(getAssetProfile)
 
 const APPLE_RESULT = { ticker: 'AAPL', name: 'Apple Inc.', asset_class: 'stock' as const }
 
@@ -19,6 +21,7 @@ describe('AssetModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockSearch.mockResolvedValue([])
+    mockGetProfile.mockResolvedValue(null)
   })
 
   it('renders the search input', () => {
@@ -40,6 +43,7 @@ describe('AssetModal', () => {
 
   it('prefills form fields when a result is selected', async () => {
     mockSearch.mockResolvedValue([APPLE_RESULT])
+    mockGetProfile.mockResolvedValue({ ticker: 'AAPL', name: 'Apple Inc.', currency: 'USD' })
     render(<AssetModal onSave={onSave} onClose={onClose} />)
 
     await userEvent.type(screen.getByPlaceholderText(/AAPL o Apple/i), 'AAPL')
@@ -47,8 +51,12 @@ describe('AssetModal', () => {
 
     await userEvent.click(screen.getByText(/Apple Inc\./))
 
-    expect((screen.getByPlaceholderText('Apple Inc.') as HTMLInputElement).value).toBe('Apple Inc.')
-    expect((screen.getByPlaceholderText('AAPL') as HTMLInputElement).value).toBe('AAPL')
+    await waitFor(() => {
+      expect((screen.getByPlaceholderText('Apple Inc.') as HTMLInputElement).value).toBe('Apple Inc.')
+      expect((screen.getByPlaceholderText('AAPL') as HTMLInputElement).value).toBe('AAPL')
+      expect((screen.getByPlaceholderText('EUR') as HTMLInputElement).value).toBe('USD')
+    })
+    expect(mockGetProfile).toHaveBeenCalledWith('AAPL')
   })
 
   it('calls onSave with correct data on submit', async () => {

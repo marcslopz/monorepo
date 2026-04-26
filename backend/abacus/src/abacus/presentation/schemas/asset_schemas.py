@@ -31,3 +31,9 @@ class StockSearchResultOut(BaseModel):
     ticker: str
     name: str
     asset_class: AssetClass
+
+
+class StockProfileOut(BaseModel):
+    ticker: str
+    name: str
+    currency: str

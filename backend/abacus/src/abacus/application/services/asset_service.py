@@ -3,7 +3,7 @@ from typing import Any
 
 from abacus.domain.exceptions import StockSearchUnavailableError
 from abacus.domain.models.asset import Asset
-from abacus.domain.models.stock_search import StockSearchResult
+from abacus.domain.models.stock_search import StockProfile, StockSearchResult
 from abacus.domain.ports.repositories import AssetRepository
 from abacus.domain.ports.stock_search import StockSearchPort
 
@@ -33,3 +33,8 @@ class AssetService:
         if self._stock_search_port is None:
             raise StockSearchUnavailableError("Stock search not configured")
         return await self._stock_search_port.search(query)
+
+    async def get_stock_profile(self, symbol: str) -> StockProfile | None:
+        if self._stock_search_port is None:
+            raise StockSearchUnavailableError("Stock search not configured")
+        return await self._stock_search_port.get_profile(symbol)

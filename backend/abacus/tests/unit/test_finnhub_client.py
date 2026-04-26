@@ -100,6 +100,42 @@ async def test_search_returns_empty_on_no_results() -> None:
     assert results == []
 
 
+async def test_get_profile_returns_name_and_currency() -> None:
+    client = _make_client()
+    profile_response = {"name": "Apple Inc.", "currency": "USD", "ticker": "AAPL"}
+    mock_ctx, _ = _mock_httpx(profile_response)
+
+    with patch("httpx.AsyncClient", return_value=mock_ctx):
+        profile = await client.get_profile("AAPL")
+
+    assert profile is not None
+    assert profile.name == "Apple Inc."
+    assert profile.currency == "USD"
+    assert profile.ticker == "AAPL"
+
+
+async def test_get_profile_returns_none_when_empty_response() -> None:
+    client = _make_client()
+    mock_ctx, _ = _mock_httpx({})
+
+    with patch("httpx.AsyncClient", return_value=mock_ctx):
+        profile = await client.get_profile("UNKNOWN")
+
+    assert profile is None
+
+
+async def test_get_profile_caches_result() -> None:
+    client = _make_client()
+    profile_response = {"name": "Apple Inc.", "currency": "USD"}
+    mock_ctx, mock_http_client = _mock_httpx(profile_response)
+
+    with patch("httpx.AsyncClient", return_value=mock_ctx):
+        await client.get_profile("AAPL")
+        await client.get_profile("aapl")  # same symbol after upper()
+
+    assert mock_http_client.get.call_count == 1
+
+
 async def test_search_raises_external_service_error_on_http_failure() -> None:
     from abacus.domain.exceptions import ExternalServiceError
 

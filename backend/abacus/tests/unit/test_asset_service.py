@@ -135,3 +135,22 @@ async def test_search_stocks_delegates_to_port(
 async def test_search_stocks_raises_when_no_port(service: AssetService) -> None:
     with pytest.raises(StockSearchUnavailableError):
         await service.search_stocks("AAPL")
+
+
+async def test_get_stock_profile_delegates_to_port(
+    service_with_search: AssetService, mock_stock_search_port: AsyncMock
+) -> None:
+    from abacus.domain.models.stock_search import StockProfile
+
+    profile = StockProfile(ticker="AAPL", name="Apple Inc.", currency="USD")
+    mock_stock_search_port.get_profile.return_value = profile
+
+    result = await service_with_search.get_stock_profile("AAPL")
+
+    assert result == profile
+    mock_stock_search_port.get_profile.assert_called_once_with("AAPL")
+
+
+async def test_get_stock_profile_raises_when_no_port(service: AssetService) -> None:
+    with pytest.raises(StockSearchUnavailableError):
+        await service.get_stock_profile("AAPL")

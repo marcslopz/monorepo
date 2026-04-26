@@ -7,3 +7,9 @@ class StockSearchResult(BaseModel):
     ticker: str
     name: str
     asset_class: AssetClass
+
+
+class StockProfile(BaseModel):
+    ticker: str
+    name: str
+    currency: str

@@ -131,6 +131,34 @@ async def test_search_assets_requires_query(async_client: Any) -> None:
     assert response.status_code == 422
 
 
+async def test_get_asset_profile(
+    async_client: Any, mock_stock_search_port: AsyncMock
+) -> None:
+    from abacus.domain.models.stock_search import StockProfile
+
+    mock_stock_search_port.get_profile.return_value = StockProfile(
+        ticker="AAPL", name="Apple Inc.", currency="USD"
+    )
+
+    response = await async_client.get("/api/assets/profile?symbol=AAPL")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Apple Inc."
+    assert data["currency"] == "USD"
+
+
+async def test_get_asset_profile_returns_null_when_not_found(
+    async_client: Any, mock_stock_search_port: AsyncMock
+) -> None:
+    mock_stock_search_port.get_profile.return_value = None
+
+    response = await async_client.get("/api/assets/profile?symbol=UNKNOWN")
+
+    assert response.status_code == 200
+    assert response.json() is None
+
+
 async def test_create_asset_returns_existing_on_ticker_dupe(
     async_client: Any, mock_asset_repository: AsyncMock
 ) -> None:

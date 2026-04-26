@@ -1,4 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react'
+import { getAssetProfile } from '../api/assets'
 import { useStockSearch } from '../hooks/useStockSearch'
 import type { AssetClass, AssetCreate } from '../types/models'
 
@@ -25,14 +26,26 @@ export default function AssetModal({ onSave, onClose }: Props) {
 
   const { query, setQuery, results, loading: searching } = useStockSearch()
   const [showDropdown, setShowDropdown] = useState(false)
+  const [loadingProfile, setLoadingProfile] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
 
-  function handleSelectResult(result: { ticker: string; name: string; asset_class: AssetClass }) {
+  async function handleSelectResult(result: { ticker: string; name: string; asset_class: AssetClass }) {
     setTicker(result.ticker)
     setName(result.name)
     setAssetClass(result.asset_class)
     setQuery('')
     setShowDropdown(false)
+
+    setLoadingProfile(true)
+    try {
+      const profile = await getAssetProfile(result.ticker)
+      if (profile) {
+        setName(profile.name)
+        setCurrency(profile.currency)
+      }
+    } finally {
+      setLoadingProfile(false)
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -163,6 +176,9 @@ export default function AssetModal({ onSave, onClose }: Props) {
             </div>
           </div>
 
+          {loadingProfile && (
+            <p className="text-slate-400 text-sm">Cargando perfil…</p>
+          )}
           {error && <p className="text-red-400 text-sm">{error}</p>}
 
           <div className="flex gap-3 pt-2">

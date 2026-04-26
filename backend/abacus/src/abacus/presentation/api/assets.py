@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Query
 
 from abacus.presentation.dependencies import AssetServiceDep, CurrentUser
-from abacus.presentation.schemas.asset_schemas import AssetCreate, AssetOut, StockSearchResultOut
+from abacus.presentation.schemas.asset_schemas import (
+    AssetCreate,
+    AssetOut,
+    StockProfileOut,
+    StockSearchResultOut,
+)
 
 router = APIRouter(prefix="/assets", tags=["assets"])
 
@@ -24,6 +29,16 @@ async def search_assets(
 ) -> list[StockSearchResultOut]:
     results = await service.search_stocks(q)
     return [StockSearchResultOut.model_validate(r, from_attributes=True) for r in results]
+
+
+@router.get("/profile", response_model=StockProfileOut | None)
+async def get_asset_profile(
+    service: AssetServiceDep,
+    user_id: CurrentUser,
+    symbol: str = Query(min_length=1, max_length=32),
+) -> StockProfileOut | None:
+    profile = await service.get_stock_profile(symbol)
+    return StockProfileOut.model_validate(profile, from_attributes=True) if profile else None
 
 
 @router.get("/", response_model=list[AssetOut])

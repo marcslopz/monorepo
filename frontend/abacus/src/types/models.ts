@@ -47,6 +47,12 @@ export interface StockSearchResult {
   asset_class: AssetClass
 }
 
+export interface StockProfile {
+  ticker: string
+  name: string
+  currency: string
+}
+
 export interface TransactionCreate {
   asset_id: string
   date: string
