@@ -43,7 +43,7 @@ describe('AssetModal', () => {
 
   it('prefills form fields when a result is selected', async () => {
     mockSearch.mockResolvedValue([APPLE_RESULT])
-    mockGetProfile.mockResolvedValue({ ticker: 'AAPL', name: 'Apple Inc.', currency: 'USD' })
+    mockGetProfile.mockResolvedValue({ ticker: 'AAPL', name: 'Apple Inc.', currency: 'USD', isin: null })
     render(<AssetModal onSave={onSave} onClose={onClose} />)
 
     await userEvent.type(screen.getByPlaceholderText(/AAPL o Apple/i), 'AAPL')
