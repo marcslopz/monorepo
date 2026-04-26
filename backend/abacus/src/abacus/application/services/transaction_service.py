@@ -27,4 +27,6 @@ class TransactionService:
         if asset is None:
             raise NotFoundError("Asset", str(data["asset_id"]))
         data["user_id"] = user_id
+        if not data.get("currency"):
+            data["currency"] = asset.currency
         return await self._tx_repo.create(data)

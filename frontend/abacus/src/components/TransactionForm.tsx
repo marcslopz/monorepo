@@ -18,11 +18,18 @@ export default function TransactionForm({ assets, onSubmit, onAddAsset }: Props)
   const [quantity, setQuantity] = useState('')
   const [price, setPrice] = useState('')
   const [fee, setFee] = useState('0')
+  const [currency, setCurrency] = useState('')
   const [broker, setBroker] = useState('')
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showAssetModal, setShowAssetModal] = useState(false)
+
+  function handleAssetChange(id: string) {
+    setAssetId(id)
+    const asset = assets.find(a => a.id === id)
+    if (asset) setCurrency(asset.currency)
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -37,6 +44,7 @@ export default function TransactionForm({ assets, onSubmit, onAddAsset }: Props)
         quantity,
         price_per_unit: price,
         fee,
+        currency: currency || null,
         broker: broker || null,
         notes: notes || null,
       })
@@ -47,6 +55,7 @@ export default function TransactionForm({ assets, onSubmit, onAddAsset }: Props)
       setQuantity('')
       setPrice('')
       setFee('0')
+      setCurrency('')
       setBroker('')
       setNotes('')
     } catch (err) {
@@ -72,7 +81,7 @@ export default function TransactionForm({ assets, onSubmit, onAddAsset }: Props)
             <div className="flex gap-2">
               <select
                 value={assetId}
-                onChange={e => setAssetId(e.target.value)}
+                onChange={e => handleAssetChange(e.target.value)}
                 className="flex-1 bg-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Selecciona…</option>
@@ -156,8 +165,8 @@ export default function TransactionForm({ assets, onSubmit, onAddAsset }: Props)
           </div>
         </div>
 
-        {/* Fee + broker */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Fee + currency + broker */}
+        <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-xs text-slate-400 mb-1">Comisión</label>
             <input
@@ -166,6 +175,16 @@ export default function TransactionForm({ assets, onSubmit, onAddAsset }: Props)
               step="any"
               value={fee}
               onChange={e => setFee(e.target.value)}
+              className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">Divisa</label>
+            <input
+              value={currency}
+              onChange={e => setCurrency(e.target.value.toUpperCase())}
+              placeholder="USD"
+              maxLength={3}
               className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>

@@ -20,6 +20,7 @@ export interface Transaction {
   quantity: string
   price_per_unit: string
   fee: string
+  currency: string
   broker: string | null
   notes: string | null
   created_at: string
@@ -61,6 +62,7 @@ export interface TransactionCreate {
   quantity: string
   price_per_unit: string
   fee: string
+  currency: string | null
   broker: string | null
   notes: string | null
 }

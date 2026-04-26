@@ -37,6 +37,7 @@ async def test_create_transaction_injects_user_id(
         "quantity": Decimal("10"),
         "price_per_unit": Decimal("150"),
         "fee": Decimal("0"),
+        "currency": "USD",
         "broker": None,
         "notes": None,
     }
@@ -45,6 +46,33 @@ async def test_create_transaction_injects_user_id(
     assert result == tx
     call_data = mock_transaction_repository.create.call_args[0][0]
     assert call_data["user_id"] == TEST_USER_ID
+
+
+async def test_create_transaction_defaults_currency_from_asset(
+    service: TransactionService,
+    mock_asset_repository: AsyncMock,
+    mock_transaction_repository: AsyncMock,
+) -> None:
+    asset = make_asset(currency="USD")
+    tx = make_transaction(currency="USD")
+    mock_asset_repository.get_by_id.return_value = asset
+    mock_transaction_repository.create.return_value = tx
+
+    data = {
+        "asset_id": TEST_ASSET_ID,
+        "date": tx.date,
+        "type": TransactionType.BUY,
+        "quantity": Decimal("10"),
+        "price_per_unit": Decimal("150"),
+        "fee": Decimal("0"),
+        "broker": None,
+        "notes": None,
+        # no currency provided
+    }
+    await service.create_transaction(TEST_USER_ID, data)
+
+    call_data = mock_transaction_repository.create.call_args[0][0]
+    assert call_data["currency"] == "USD"
 
 
 async def test_create_transaction_raises_if_asset_not_found(
