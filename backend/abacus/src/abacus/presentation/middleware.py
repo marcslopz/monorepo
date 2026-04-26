@@ -3,7 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from abacus.config import settings
-from abacus.domain.exceptions import AuthenticationError, NotFoundError, ValidationError
+from abacus.domain.exceptions import (
+    AuthenticationError,
+    ExternalServiceError,
+    NotFoundError,
+    StockSearchUnavailableError,
+    ValidationError,
+)
 
 
 def add_cors_middleware(app: FastAPI) -> None:
@@ -35,5 +41,23 @@ def add_exception_handlers(app: FastAPI) -> None:
     async def auth_error_handler(request: Request, exc: AuthenticationError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(StockSearchUnavailableError)
+    async def stock_search_unavailable_handler(
+        request: Request, exc: StockSearchUnavailableError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(ExternalServiceError)
+    async def external_service_error_handler(
+        request: Request, exc: ExternalServiceError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_502_BAD_GATEWAY,
             content={"detail": str(exc)},
         )

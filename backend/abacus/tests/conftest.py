@@ -69,6 +69,11 @@ def mock_transaction_repository() -> AsyncMock:
     return AsyncMock()
 
 
+@pytest.fixture
+def mock_stock_search_port() -> AsyncMock:
+    return AsyncMock()
+
+
 # ── HTTP client fixtures ───────────────────────────────────────────────────────
 
 

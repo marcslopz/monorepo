@@ -95,6 +95,7 @@ services:
     environment:
       ABACUS_DATABASE_URL: ${ABACUS_DATABASE_URL:-postgresql+asyncpg://appuser:apppassword@postgres:5432/abacus_db}
       ABACUS_CORS_ORIGINS: ${ABACUS_CORS_ORIGINS:-http://localhost:5175}
+      ABACUS_FINNHUB_API_KEY: ${ABACUS_FINNHUB_API_KEY:-}
     command: sh prestart.sh
     depends_on:
       postgres:

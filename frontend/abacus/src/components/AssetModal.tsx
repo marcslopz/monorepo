@@ -1,4 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
+import { getAssetProfile } from '../api/assets'
+import { useStockSearch } from '../hooks/useStockSearch'
 import type { AssetClass, AssetCreate } from '../types/models'
 
 interface Props {
@@ -21,6 +23,31 @@ export default function AssetModal({ onSave, onClose }: Props) {
   const [currency, setCurrency] = useState('EUR')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const { query, setQuery, results, loading: searching } = useStockSearch()
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [loadingProfile, setLoadingProfile] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+
+  async function handleSelectResult(result: { ticker: string; name: string; asset_class: AssetClass }) {
+    setTicker(result.ticker)
+    setName(result.name)
+    setAssetClass(result.asset_class)
+    setQuery('')
+    setShowDropdown(false)
+
+    setLoadingProfile(true)
+    try {
+      const profile = await getAssetProfile(result.ticker)
+      if (profile) {
+        setName(profile.name)
+        setCurrency(profile.currency)
+        if (profile.isin) setIsin(profile.isin)
+      }
+    } finally {
+      setLoadingProfile(false)
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -48,6 +75,44 @@ export default function AssetModal({ onSave, onClose }: Props) {
         <div className="flex items-center justify-between p-6 border-b border-slate-700">
           <h2 className="text-lg font-semibold text-white">Nuevo asset</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
+        </div>
+
+        <div className="px-6 pt-4">
+          <label className="block text-sm text-slate-300 mb-1">Buscar acción</label>
+          <div className="relative" ref={searchRef}>
+            <input
+              value={query}
+              onChange={e => {
+                setQuery(e.target.value)
+                setShowDropdown(true)
+              }}
+              onFocus={() => setShowDropdown(true)}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+              placeholder="Ej. AAPL o Apple…"
+              className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {showDropdown && query.trim() && (
+              <div className="absolute z-10 mt-1 w-full bg-slate-700 rounded-lg shadow-lg overflow-hidden">
+                {searching && (
+                  <p className="px-3 py-2 text-sm text-slate-400">Buscando…</p>
+                )}
+                {!searching && results.length === 0 && (
+                  <p className="px-3 py-2 text-sm text-slate-400">Sin resultados</p>
+                )}
+                {!searching && results.map(r => (
+                  <button
+                    key={r.ticker}
+                    type="button"
+                    onMouseDown={() => handleSelectResult(r)}
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-slate-600 transition-colors"
+                  >
+                    <span className="font-mono font-semibold">{r.ticker}</span>
+                    <span className="text-slate-300"> — {r.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -112,6 +177,9 @@ export default function AssetModal({ onSave, onClose }: Props) {
             </div>
           </div>
 
+          {loadingProfile && (
+            <p className="text-slate-400 text-sm">Cargando perfil…</p>
+          )}
           {error && <p className="text-red-400 text-sm">{error}</p>}
 
           <div className="flex gap-3 pt-2">

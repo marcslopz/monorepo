@@ -22,6 +22,16 @@ class SQLAlchemyAssetRepository:
         row = result.scalar_one_or_none()
         return Asset.model_validate(row) if row else None
 
+    async def get_by_ticker(self, ticker: str, user_id: uuid.UUID) -> Asset | None:
+        result = await self._session.execute(
+            select(AssetModel).where(
+                AssetModel.ticker == ticker,
+                AssetModel.user_id == user_id,
+            )
+        )
+        row = result.scalar_one_or_none()
+        return Asset.model_validate(row) if row else None
+
     async def list_by_user(self, user_id: uuid.UUID) -> list[Asset]:
         result = await self._session.execute(
             select(AssetModel).where(AssetModel.user_id == user_id).order_by(AssetModel.name)
