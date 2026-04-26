@@ -2,7 +2,16 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Date, Enum, ForeignKey, Numeric, String, Text
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    Enum,
+    ForeignKey,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy import func as sa_func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -64,3 +73,37 @@ class TransactionModel(Base):
     )
 
     asset: Mapped["AssetModel"] = relationship(back_populates="transactions")
+    sell_links: Mapped[list["TransactionLinkModel"]] = relationship(
+        "TransactionLinkModel",
+        foreign_keys="TransactionLinkModel.sell_id",
+        cascade="all, delete-orphan",
+    )
+    buy_links: Mapped[list["TransactionLinkModel"]] = relationship(
+        "TransactionLinkModel",
+        foreign_keys="TransactionLinkModel.buy_id",
+    )
+
+
+class TransactionLinkModel(Base):
+    __tablename__ = "transaction_links"
+    __table_args__ = (
+        UniqueConstraint("sell_id", "buy_id", name="uq_transaction_link_sell_buy"),
+        CheckConstraint("quantity > 0", name="ck_transaction_link_quantity_positive"),
+        {"schema": _SCHEMA},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    sell_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey(f"{_SCHEMA}.transactions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    buy_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey(f"{_SCHEMA}.transactions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    quantity: Mapped[Decimal] = mapped_column(Numeric(precision=20, scale=8), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=sa_func.now())

@@ -15,6 +15,9 @@ from abacus.infrastructure.persistence.database import get_session
 from abacus.infrastructure.persistence.repositories.sqlalchemy_asset_repository import (
     SQLAlchemyAssetRepository,
 )
+from abacus.infrastructure.persistence.repositories.sqlalchemy_transaction_link_repository import (
+    SQLAlchemyTransactionLinkRepository,
+)
 from abacus.infrastructure.persistence.repositories.sqlalchemy_transaction_repository import (
     SQLAlchemyTransactionRepository,
 )
@@ -45,7 +48,12 @@ def get_asset_service(session: SessionDep, port: StockSearchPortDep) -> AssetSer
 def get_transaction_service(session: SessionDep) -> TransactionService:
     asset_repo = SQLAlchemyAssetRepository(session)
     tx_repo = SQLAlchemyTransactionRepository(session)
-    return TransactionService(asset_repository=asset_repo, transaction_repository=tx_repo)
+    link_repo = SQLAlchemyTransactionLinkRepository(session)
+    return TransactionService(
+        asset_repository=asset_repo,
+        transaction_repository=tx_repo,
+        link_repository=link_repo,
+    )
 
 
 AssetServiceDep = Annotated[AssetService, Depends(get_asset_service)]

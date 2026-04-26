@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { listTransactions, createTransaction } from '../api/transactions'
+import { listTransactions, createTransaction, updateSellLinks } from '../api/transactions'
 import type { Transaction, TransactionCreate } from '../types/models'
 
 const PAGE_SIZE = 50
@@ -47,7 +47,15 @@ export function useTransactions() {
     await fetchPage(0)
   }, [fetchPage])
 
+  const updateLinks = useCallback(
+    async (sellId: string, links: [string, string][]): Promise<void> => {
+      await updateSellLinks(sellId, links)
+      await fetchPage(0)
+    },
+    [fetchPage],
+  )
+
   const hasMore = transactions.length < total
 
-  return { transactions, total, loading, error, addTransaction, loadMore, hasMore }
+  return { transactions, total, loading, error, addTransaction, updateLinks, loadMore, hasMore }
 }
