@@ -49,7 +49,9 @@ export default function TransactionList({
           {transactions.map(tx => {
             const asset = getAsset(assets, tx.asset_id)
             const isBuy = tx.type === 'buy'
-            const txTotal = Number(tx.quantity) * Number(tx.price_per_unit) + Number(tx.fee)
+            const txTotal = isBuy
+              ? Number(tx.quantity) * Number(tx.price_per_unit) + Number(tx.fee)
+              : Number(tx.quantity) * Number(tx.price_per_unit) - Number(tx.fee)
             const hasPnl = !isBuy && tx.realized_pnl !== null
             const pnlValue = hasPnl ? Number(tx.realized_pnl) : null
             const isPnlPositive = pnlValue !== null && pnlValue >= 0
