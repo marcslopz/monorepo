@@ -100,6 +100,7 @@ async def test_create_transaction(
         "quantity": "10",
         "price_per_unit": "150.00",
         "fee": "0",
+        "currency": "USD",
         "broker": None,
         "notes": None,
     }
@@ -107,6 +108,7 @@ async def test_create_transaction(
     assert response.status_code == 201
     data = response.json()
     assert data["type"] == "buy"
+    assert data["currency"] == "USD"
 
 
 async def test_search_assets_returns_results(

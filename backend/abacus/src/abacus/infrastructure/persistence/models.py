@@ -55,6 +55,7 @@ class TransactionModel(Base):
     fee: Mapped[Decimal] = mapped_column(
         Numeric(precision=20, scale=8), nullable=False, server_default="0"
     )
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
     broker: Mapped[str | None] = mapped_column(String(256), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=sa_func.now())

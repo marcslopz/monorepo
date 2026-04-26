@@ -75,7 +75,7 @@ export default function TransactionList({
               <div className="text-right shrink-0">
                 <p className="text-sm text-slate-200">{formatQuantity(tx.quantity)}</p>
                 <p className="text-xs text-slate-400">
-                  {asset ? formatCurrency(tx.price_per_unit, asset.currency) : tx.price_per_unit}/u
+                  {formatCurrency(tx.price_per_unit, tx.currency)}/u
                 </p>
               </div>
 
@@ -83,11 +83,11 @@ export default function TransactionList({
               <div className="text-right shrink-0 w-24">
                 <p className={`text-sm font-medium ${isBuy ? 'text-red-400' : 'text-green-400'}`}>
                   {isBuy ? '−' : '+'}
-                  {asset ? formatCurrency(total, asset.currency) : total.toFixed(2)}
+                  {formatCurrency(total, tx.currency)}
                 </p>
                 {Number(tx.fee) > 0 && (
                   <p className="text-xs text-slate-500">
-                    com. {asset ? formatCurrency(tx.fee, asset.currency) : tx.fee}
+                    com. {formatCurrency(tx.fee, tx.currency)}
                   </p>
                 )}
               </div>

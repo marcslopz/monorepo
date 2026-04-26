@@ -48,6 +48,7 @@ def make_transaction(**kwargs: Any) -> Transaction:
         "quantity": Decimal("10"),
         "price_per_unit": Decimal("150.00"),
         "fee": Decimal("0"),
+        "currency": "USD",
         "broker": None,
         "notes": None,
         "created_at": now,

@@ -14,6 +14,7 @@ class TransactionCreate(BaseModel):
     quantity: Decimal = Field(gt=0)
     price_per_unit: Decimal
     fee: Decimal = Decimal("0")
+    currency: str | None = None
     broker: str | None = None
     notes: str | None = None
 
@@ -26,6 +27,7 @@ class TransactionOut(BaseModel):
     quantity: Decimal
     price_per_unit: Decimal
     fee: Decimal
+    currency: str
     broker: str | None
     notes: str | None
     created_at: datetime

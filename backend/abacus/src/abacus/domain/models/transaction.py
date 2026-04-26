@@ -20,6 +20,7 @@ class Transaction(BaseModel):
     quantity: Decimal
     price_per_unit: Decimal
     fee: Decimal
+    currency: str
     broker: str | None
     notes: str | None
     created_at: datetime
