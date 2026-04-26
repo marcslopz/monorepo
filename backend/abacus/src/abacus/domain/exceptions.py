@@ -15,3 +15,11 @@ class ValidationError(DomainError):
 
 class AuthenticationError(DomainError):
     pass
+
+
+class StockSearchUnavailableError(DomainError):
+    pass
+
+
+class ExternalServiceError(DomainError):
+    pass

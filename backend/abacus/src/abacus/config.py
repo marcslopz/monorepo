@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     # Neon Auth (JWT/JWKS) — leave empty in local dev to bypass auth
     jwks_url: str = Field("", validation_alias="ABACUS_JWKS_URL")
     jwt_audience: str = Field("", validation_alias="ABACUS_JWT_AUDIENCE")
+    # Finnhub — leave empty to disable stock search
+    finnhub_api_key: str = Field("", validation_alias="ABACUS_FINNHUB_API_KEY")
+    finnhub_base_url: str = Field(
+        "https://finnhub.io/api/v1", validation_alias="ABACUS_FINNHUB_BASE_URL"
+    )
 
     @property
     def cors_origins_list(self) -> list[str]:

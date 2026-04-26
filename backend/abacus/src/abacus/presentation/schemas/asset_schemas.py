@@ -25,3 +25,9 @@ class AssetOut(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class StockSearchResultOut(BaseModel):
+    ticker: str
+    name: str
+    asset_class: AssetClass
