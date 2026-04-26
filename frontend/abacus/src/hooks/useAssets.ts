@@ -26,7 +26,11 @@ export function useAssets() {
 
   const addAsset = useCallback(async (data: AssetCreate): Promise<Asset> => {
     const asset = await createAsset(data)
-    setAssets(prev => [...prev, asset].sort((a, b) => a.name.localeCompare(b.name)))
+    setAssets(prev =>
+      prev.some(a => a.id === asset.id)
+        ? prev
+        : [...prev, asset].sort((a, b) => a.name.localeCompare(b.name))
+    )
     return asset
   }, [])
 
