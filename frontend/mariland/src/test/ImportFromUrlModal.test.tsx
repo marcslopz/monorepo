@@ -24,6 +24,7 @@ const basePiso: Piso = {
   contacto_telefono: null,
   contacto_inmobiliaria: null,
   estado: 'candidato',
+  owner: null,
   extras: null,
   notas: null,
   created_at: '2026-01-01T00:00:00Z',

@@ -29,6 +29,7 @@ class PisoModel(Base):
     contacto_telefono: Mapped[str | None] = mapped_column(String(64), nullable=True)
     contacto_inmobiliaria: Mapped[str | None] = mapped_column(String(256), nullable=True)
     estado: Mapped[str] = mapped_column(String(64), nullable=False, default="candidato")
+    owner: Mapped[str | None] = mapped_column(String(64), nullable=True)
     extras: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True, default=dict)
     notas: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

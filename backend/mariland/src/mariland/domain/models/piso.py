@@ -26,6 +26,7 @@ class Piso(BaseModel):
     contacto_telefono: str | None
     contacto_inmobiliaria: str | None
     estado: str
+    owner: str | None
     extras: dict[str, Any] | None
     notas: str | None
     created_at: datetime

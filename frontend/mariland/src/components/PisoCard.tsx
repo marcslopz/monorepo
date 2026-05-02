@@ -117,6 +117,11 @@ export default function PisoCard({ piso, onEdit, onDelete, onComments, onPrices,
           )}
         </div>
       )}
+      {piso.owner && (
+        <div className="mt-1 text-xs text-gray-400">
+          👤 <span className="font-medium text-gray-500">{piso.owner}</span> gestiona el contacto
+        </div>
+      )}
       <div className="mt-2 flex gap-3 text-xs text-gray-400">
         {piso.comments.length > 0 && <span>💬 {piso.comments.length}</span>}
         {piso.price_history.length > 0 && <span>📊 {piso.price_history.length} precios</span>}

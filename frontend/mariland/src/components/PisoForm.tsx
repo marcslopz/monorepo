@@ -4,6 +4,7 @@ import { ESTADOS } from '../utils/estadoUtils'
 import Modal from './Modal'
 const CERT_ENERGETICA = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'en trámite', 'exento']
 const ORIENTACIONES = ['Norte', 'Noreste', 'Este', 'Sureste', 'Sur', 'Suroeste', 'Oeste', 'Noroeste']
+const OWNERS = ['Nagore', 'Marcos']
 const BARRIOS = [
   'Centre',
   'Marianao',
@@ -33,6 +34,7 @@ type FormState = {
   contacto_telefono: string
   contacto_inmobiliaria: string
   estado: string
+  owner: string
   notas: string
 }
 
@@ -61,6 +63,7 @@ export default function PisoForm({ piso, onSave, onClose }: PisoFormProps) {
     contacto_telefono: piso?.contacto_telefono ?? '',
     contacto_inmobiliaria: piso?.contacto_inmobiliaria ?? '',
     estado: piso?.estado ?? 'candidato',
+    owner: piso?.owner ?? '',
     notas: piso?.notas ?? '',
   })
   const [loading, setLoading] = useState(false)
@@ -89,6 +92,7 @@ export default function PisoForm({ piso, onSave, onClose }: PisoFormProps) {
         contacto_nombre: form.contacto_nombre || null,
         contacto_telefono: form.contacto_telefono || null,
         contacto_inmobiliaria: form.contacto_inmobiliaria || null,
+        owner: form.owner || null,
         notas: form.notas || null,
       }
       await onSave(data)
@@ -196,6 +200,14 @@ export default function PisoForm({ piso, onSave, onClose }: PisoFormProps) {
         </div>
         <div className="border-t border-gray-100 pt-4">
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">Contacto</p>
+          <div className="mb-3">
+            <label className="mb-1 block text-sm font-medium text-gray-700">Responsable de contacto</label>
+            <select value={form.owner} onChange={set('owner')}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none bg-white">
+              <option value="">—</option>
+              {OWNERS.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Nombre</label>

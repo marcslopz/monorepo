@@ -32,6 +32,7 @@ export interface Piso {
   contacto_telefono: string | null
   contacto_inmobiliaria: string | null
   estado: string
+  owner: string | null
   extras: Record<string, boolean> | null
   notas: string | null
   created_at: string
@@ -58,6 +59,7 @@ export interface PisoCreate {
   contacto_telefono?: string | null
   contacto_inmobiliaria?: string | null
   estado?: string
+  owner?: string | null
   extras?: Record<string, boolean> | null
   notas?: string | null
 }
