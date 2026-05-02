@@ -187,3 +187,44 @@ async def test_piso_out_contains_imagen_url_null(
 
     assert response.status_code == 200
     assert response.json()["imagen_url"] is None
+
+
+@pytest.mark.asyncio
+async def test_create_piso_with_owner(
+    async_client: AsyncClient, mock_piso_svc: AsyncMock
+) -> None:
+    piso = make_piso(id=1, owner="Marcos")
+    mock_piso_svc.create_piso.return_value = piso
+
+    response = await async_client.post(
+        "/api/pisos/",
+        json={"estado": "candidato", "owner": "Marcos"},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["owner"] == "Marcos"
+
+
+@pytest.mark.asyncio
+async def test_piso_out_contains_owner_null(
+    async_client: AsyncClient, mock_piso_svc: AsyncMock
+) -> None:
+    piso = make_piso(id=3, owner=None)
+    mock_piso_svc.get_piso.return_value = piso
+
+    response = await async_client.get("/api/pisos/3")
+
+    assert response.status_code == 200
+    assert response.json()["owner"] is None
+
+
+@pytest.mark.asyncio
+async def test_create_piso_invalid_owner(
+    async_client: AsyncClient, mock_piso_svc: AsyncMock
+) -> None:
+    response = await async_client.post(
+        "/api/pisos/",
+        json={"estado": "candidato", "owner": "OtroNombre"},
+    )
+
+    assert response.status_code == 422

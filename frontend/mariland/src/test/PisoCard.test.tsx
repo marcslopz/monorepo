@@ -23,6 +23,7 @@ const basePiso: Piso = {
   contacto_telefono: null,
   contacto_inmobiliaria: null,
   estado: 'candidato',
+  owner: null,
   extras: null,
   notas: null,
   created_at: '2026-01-01T00:00:00Z',
@@ -40,6 +41,7 @@ function renderCard(overrides: Partial<Piso> = {}) {
     onPrices: vi.fn(),
     onExtras: vi.fn(),
     onEstadoChange: vi.fn(),
+    onOwnerChange: vi.fn(),
   }
   render(<PisoCard {...props} />)
   return props

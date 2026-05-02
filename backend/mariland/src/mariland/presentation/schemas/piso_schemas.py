@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+VALID_OWNERS = {"Nagore", "Marcos"}
 
 
 class PriceHistoryCreate(BaseModel):
@@ -54,8 +56,16 @@ class PisoCreate(BaseModel):
     contacto_telefono: str | None = None
     contacto_inmobiliaria: str | None = None
     estado: str = "candidato"
+    owner: str | None = None
     extras: dict[str, Any] | None = None
     notas: str | None = None
+
+    @field_validator("owner")
+    @classmethod
+    def validate_owner(cls, v: str | None) -> str | None:
+        if v is not None and v not in VALID_OWNERS:
+            raise ValueError(f"owner must be one of {sorted(VALID_OWNERS)}")
+        return v
 
 
 class PisoUpdate(BaseModel):
@@ -76,8 +86,16 @@ class PisoUpdate(BaseModel):
     contacto_telefono: str | None = None
     contacto_inmobiliaria: str | None = None
     estado: str | None = None
+    owner: str | None = None
     extras: dict[str, Any] | None = None
     notas: str | None = None
+
+    @field_validator("owner")
+    @classmethod
+    def validate_owner(cls, v: str | None) -> str | None:
+        if v is not None and v not in VALID_OWNERS:
+            raise ValueError(f"owner must be one of {sorted(VALID_OWNERS)}")
+        return v
 
 
 class PisoOut(BaseModel):
@@ -99,6 +117,7 @@ class PisoOut(BaseModel):
     contacto_telefono: str | None
     contacto_inmobiliaria: str | None
     estado: str
+    owner: str | None
     extras: dict[str, Any] | None
     notas: str | None
     created_at: datetime

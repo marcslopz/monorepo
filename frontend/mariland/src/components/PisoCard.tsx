@@ -3,6 +3,7 @@ import type { Piso, PriceHistory } from '../types/piso'
 import ActionMenu from './ActionMenu'
 import EstadoDropdown from './EstadoDropdown'
 import ImagenModal from './ImagenModal'
+import OwnerDropdown from './OwnerDropdown'
 
 const CERT_COLORS: Record<string, string> = {
   A: 'bg-green-600', B: 'bg-green-400', C: 'bg-yellow-400',
@@ -32,9 +33,10 @@ interface PisoCardProps {
   onPrices: () => void
   onExtras: () => void
   onEstadoChange: (id: number, estado: string) => void
+  onOwnerChange: (id: number, owner: string | null) => void
 }
 
-export default function PisoCard({ piso, onEdit, onDelete, onComments, onPrices, onExtras, onEstadoChange }: PisoCardProps) {
+export default function PisoCard({ piso, onEdit, onDelete, onComments, onPrices, onExtras, onEstadoChange, onOwnerChange }: PisoCardProps) {
   const [showImagenModal, setShowImagenModal] = useState(false)
   const variation = priceVariation(piso)
   const precioM2 = piso.precio && piso.metros ? Math.round(piso.precio / piso.metros) : null
@@ -69,6 +71,7 @@ export default function PisoCard({ piso, onEdit, onDelete, onComments, onPrices,
               {piso.certificacion_energetica}
             </span>
           )}
+          <OwnerDropdown pisoId={piso.id} owner={piso.owner} onOwnerChange={onOwnerChange} />
           <EstadoDropdown pisoId={piso.id} estado={piso.estado} onEstadoChange={onEstadoChange} />
           <ActionMenu
             onEdit={onEdit}

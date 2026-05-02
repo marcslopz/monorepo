@@ -38,6 +38,7 @@ def make_piso(**kwargs: Any) -> Piso:
         "contacto_telefono": None,
         "contacto_inmobiliaria": None,
         "estado": "candidato",
+        "owner": None,
         "extras": None,
         "notas": None,
         "created_at": now,
