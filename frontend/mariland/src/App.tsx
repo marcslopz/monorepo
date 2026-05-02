@@ -127,6 +127,7 @@ export default function App() {
               onPrices={() => setPricePiso(piso)}
               onExtras={() => setExtrasPiso(piso)}
               onEstadoChange={(id, estado) => updatePiso(id, { estado })}
+              onOwnerChange={(id, owner) => updatePiso(id, { owner })}
             />
           ))}
         </div>
