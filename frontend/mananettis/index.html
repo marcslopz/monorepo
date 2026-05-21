@@ -1493,6 +1493,7 @@ function togglePlay() {
     playFromCurrent();
   } else {
     isPaused = true;
+    utteranceGen++;
     clearInterval(countdownTimer);
     synth.pause();
     isRunning = false;
