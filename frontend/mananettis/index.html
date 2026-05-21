@@ -510,6 +510,11 @@
       <button class="btn" onclick="repeatLine()">↺ Repetir</button>
       <button class="btn btn-danger" onclick="goSetup()">✕ Salir</button>
     </div>
+    <div class="ctrl-row">
+      <button class="btn" onclick="prevScene()">◀◀ Escena ant.</button>
+      <button class="btn" onclick="restartScene()">↺ Esta escena</button>
+      <button class="btn" onclick="nextScene()">Escena sig. ▶▶</button>
+    </div>
   </div>
 
   <div class="script-list-wrap">
@@ -1500,6 +1505,35 @@ function togglePlay() {
     document.getElementById('playBtn').textContent = '▶ Continuar';
     setStatus('paused');
   }
+}
+
+function findCurrentSceneStart() {
+  for (let i = currentIdx; i >= 0; i--) {
+    if (SCRIPT[i].scene) return i;
+  }
+  return 0;
+}
+
+function restartScene() {
+  stopAll();
+  currentIdx = findCurrentSceneStart();
+  playFromCurrent();
+}
+
+function nextScene() {
+  stopAll();
+  for (let i = currentIdx + 1; i < SCRIPT.length; i++) {
+    if (SCRIPT[i].scene) { currentIdx = i; playFromCurrent(); return; }
+  }
+}
+
+function prevScene() {
+  stopAll();
+  const curScene = findCurrentSceneStart();
+  for (let i = curScene - 1; i >= 0; i--) {
+    if (SCRIPT[i].scene) { currentIdx = i; playFromCurrent(); return; }
+  }
+  currentIdx = 0; playFromCurrent();
 }
 
 function nextLine() {
