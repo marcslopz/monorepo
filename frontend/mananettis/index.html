@@ -285,6 +285,23 @@
     transition: width 1s linear;
   }
 
+  .line-hidden-wrap {
+    text-align: center;
+    padding: 0.75rem 0;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .line-hidden-label {
+    font-size: 13px;
+    color: var(--gold-dim);
+    letter-spacing: 0.06em;
+    border: 1px dashed var(--gold-dim);
+    border-radius: 8px;
+    padding: 10px 18px;
+    display: inline-block;
+  }
+
   /* Controls */
   .controls {
     padding: 1rem 1.25rem 1.5rem;
@@ -1256,6 +1273,8 @@ let pauseSecs = 8;
 let speechRate = 1;
 let countdownTimer = null;
 let countdownRemaining = 0;
+let lineRevealed = false;
+let audioCtx = null;
 let isRunning = false;
 
 // Setup controls
@@ -1351,7 +1370,11 @@ function updateDisplay() {
     card.className = 'line-card' + (mine ? ' is-mine' : '');
     sp.className = 'speaker-name ' + (mine ? 'mine' : 'other');
     sp.textContent = l.s;
-    tx.textContent = l.t;
+    if (mine && !lineRevealed) {
+      tx.innerHTML = '<div class="line-hidden-wrap" onclick="revealLine()"><span class="line-hidden-label">👁 Toca para ver tu línea</span></div>';
+    } else {
+      tx.textContent = l.t;
+    }
   }
 
   // Update list
@@ -1374,8 +1397,27 @@ function setStatus(type, extra) {
   }
 }
 
+function playBeep() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.frequency.value = 880;
+  gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+  osc.start(audioCtx.currentTime);
+  osc.stop(audioCtx.currentTime + 0.4);
+}
+
+function revealLine() {
+  lineRevealed = true;
+  document.getElementById('lineText').textContent = SCRIPT[currentIdx].t;
+}
+
 function playFromCurrent() {
   if (currentIdx >= SCRIPT.length) { updateDisplay(); return; }
+  lineRevealed = false;
   isRunning = true;
   isPaused = false;
   document.getElementById('playBtn').textContent = '⏸ Pausar';
@@ -1395,6 +1437,7 @@ function playFromCurrent() {
 }
 
 function startMyLinePause() {
+  playBeep();
   countdownRemaining = pauseSecs;
   setStatus('myturn', countdownRemaining);
   clearInterval(countdownTimer);
