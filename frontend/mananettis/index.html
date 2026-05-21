@@ -329,6 +329,7 @@
     text-align: center;
   }
   .btn:active { background: var(--surface2); }
+  .btn:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 
   .btn.btn-play {
     background: var(--gold);
@@ -502,13 +503,18 @@
 
   <div class="controls">
     <div class="ctrl-row">
-      <button class="btn" onclick="prevLine()">← Anterior</button>
+      <button class="btn" data-nav onclick="prevLine()">← Anterior</button>
       <button class="btn btn-play" id="playBtn" onclick="togglePlay()">⏸ Pausar</button>
-      <button class="btn" onclick="nextLine()">Siguiente →</button>
+      <button class="btn" data-nav onclick="nextLine()">Siguiente →</button>
     </div>
     <div class="ctrl-row">
-      <button class="btn" onclick="repeatLine()">↺ Repetir</button>
+      <button class="btn" data-nav onclick="repeatLine()">↺ Repetir</button>
       <button class="btn btn-danger" onclick="goSetup()">✕ Salir</button>
+    </div>
+    <div class="ctrl-row">
+      <button class="btn" data-nav onclick="prevScene()">◀◀ Escena ant.</button>
+      <button class="btn" data-nav onclick="restartScene()">↺ Esta escena</button>
+      <button class="btn" data-nav onclick="nextScene()">Escena sig. ▶▶</button>
     </div>
   </div>
 
@@ -1275,6 +1281,7 @@ let countdownTimer = null;
 let countdownRemaining = 0;
 let lineRevealed = false;
 let audioCtx = null;
+let utteranceGen = 0;
 let isRunning = false;
 
 // Setup controls
@@ -1461,7 +1468,9 @@ function stripParens(text) {
 function speakLine(text, onEnd) {
   synth.cancel();
   setStatus('reading');
+  const myGen = utteranceGen;
   setTimeout(() => {
+    if (utteranceGen !== myGen) return;
     const utt = new SpeechSynthesisUtterance(stripParens(text));
     const voiceName = document.getElementById('voiceSelect').selectedOptions[0]?.text;
     const freshVoice = synth.getVoices().find(v => v.name === voiceName?.split(' (')[0]);
@@ -1469,13 +1478,14 @@ function speakLine(text, onEnd) {
     else if (selectedVoice) { utt.voice = selectedVoice; utt.lang = selectedVoice.lang; }
     else { utt.lang = 'es-ES'; }
     utt.rate = speechRate;
-    utt.onend = () => { setStatus(''); onEnd(); };
-    utt.onerror = () => { setStatus(''); onEnd(); };
+    utt.onend = () => { if (utteranceGen === myGen) { setStatus(''); onEnd(); } };
+    utt.onerror = () => { if (utteranceGen === myGen) { setStatus(''); onEnd(); } };
     synth.speak(utt);
   }, 150);
 }
 
 function stopAll() {
+  utteranceGen++;
   clearInterval(countdownTimer);
   synth.cancel();
   setStatus('');
@@ -1489,6 +1499,7 @@ function togglePlay() {
     playFromCurrent();
   } else {
     isPaused = true;
+    utteranceGen++;
     clearInterval(countdownTimer);
     synth.pause();
     isRunning = false;
@@ -1497,19 +1508,53 @@ function togglePlay() {
   }
 }
 
+function cooldownNav() {
+  document.querySelectorAll('button[data-nav]').forEach(b => { b.disabled = true; });
+  setTimeout(() => { document.querySelectorAll('button[data-nav]').forEach(b => { b.disabled = false; }); }, 500);
+}
+
+function findCurrentSceneStart() {
+  for (let i = currentIdx; i >= 0; i--) {
+    if (SCRIPT[i].scene) return i;
+  }
+  return 0;
+}
+
+function restartScene() {
+  cooldownNav(); stopAll();
+  currentIdx = findCurrentSceneStart();
+  playFromCurrent();
+}
+
+function nextScene() {
+  cooldownNav(); stopAll();
+  for (let i = currentIdx + 1; i < SCRIPT.length; i++) {
+    if (SCRIPT[i].scene) { currentIdx = i; playFromCurrent(); return; }
+  }
+}
+
+function prevScene() {
+  cooldownNav(); stopAll();
+  const curScene = findCurrentSceneStart();
+  for (let i = curScene - 1; i >= 0; i--) {
+    if (SCRIPT[i].scene) { currentIdx = i; playFromCurrent(); return; }
+  }
+  currentIdx = 0; playFromCurrent();
+}
+
 function nextLine() {
-  stopAll();
+  cooldownNav(); stopAll();
   currentIdx = Math.min(currentIdx+1, SCRIPT.length-1);
   while (currentIdx < SCRIPT.length-1 && (SCRIPT[currentIdx].scene || SCRIPT[currentIdx].acot)) currentIdx++;
   playFromCurrent();
 }
 function prevLine() {
-  stopAll();
+  cooldownNav(); stopAll();
   currentIdx = Math.max(currentIdx-1, 0);
   while (currentIdx > 0 && (SCRIPT[currentIdx].scene || SCRIPT[currentIdx].acot)) currentIdx--;
   playFromCurrent();
 }
-function repeatLine() { stopAll(); playFromCurrent(); }
+function repeatLine() { cooldownNav(); stopAll(); playFromCurrent(); }
 function jumpTo(i) { stopAll(); currentIdx = i; playFromCurrent(); }
 function goSetup() {
   stopAll();
