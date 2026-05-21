@@ -329,6 +329,7 @@
     text-align: center;
   }
   .btn:active { background: var(--surface2); }
+  .btn:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 
   .btn.btn-play {
     background: var(--gold);
@@ -502,18 +503,18 @@
 
   <div class="controls">
     <div class="ctrl-row">
-      <button class="btn" onclick="prevLine()">← Anterior</button>
+      <button class="btn" data-nav onclick="prevLine()">← Anterior</button>
       <button class="btn btn-play" id="playBtn" onclick="togglePlay()">⏸ Pausar</button>
-      <button class="btn" onclick="nextLine()">Siguiente →</button>
+      <button class="btn" data-nav onclick="nextLine()">Siguiente →</button>
     </div>
     <div class="ctrl-row">
-      <button class="btn" onclick="repeatLine()">↺ Repetir</button>
+      <button class="btn" data-nav onclick="repeatLine()">↺ Repetir</button>
       <button class="btn btn-danger" onclick="goSetup()">✕ Salir</button>
     </div>
     <div class="ctrl-row">
-      <button class="btn" onclick="prevScene()">◀◀ Escena ant.</button>
-      <button class="btn" onclick="restartScene()">↺ Esta escena</button>
-      <button class="btn" onclick="nextScene()">Escena sig. ▶▶</button>
+      <button class="btn" data-nav onclick="prevScene()">◀◀ Escena ant.</button>
+      <button class="btn" data-nav onclick="restartScene()">↺ Esta escena</button>
+      <button class="btn" data-nav onclick="nextScene()">Escena sig. ▶▶</button>
     </div>
   </div>
 
@@ -1507,6 +1508,11 @@ function togglePlay() {
   }
 }
 
+function cooldownNav() {
+  document.querySelectorAll('button[data-nav]').forEach(b => { b.disabled = true; });
+  setTimeout(() => { document.querySelectorAll('button[data-nav]').forEach(b => { b.disabled = false; }); }, 500);
+}
+
 function findCurrentSceneStart() {
   for (let i = currentIdx; i >= 0; i--) {
     if (SCRIPT[i].scene) return i;
@@ -1515,20 +1521,20 @@ function findCurrentSceneStart() {
 }
 
 function restartScene() {
-  stopAll();
+  cooldownNav(); stopAll();
   currentIdx = findCurrentSceneStart();
   playFromCurrent();
 }
 
 function nextScene() {
-  stopAll();
+  cooldownNav(); stopAll();
   for (let i = currentIdx + 1; i < SCRIPT.length; i++) {
     if (SCRIPT[i].scene) { currentIdx = i; playFromCurrent(); return; }
   }
 }
 
 function prevScene() {
-  stopAll();
+  cooldownNav(); stopAll();
   const curScene = findCurrentSceneStart();
   for (let i = curScene - 1; i >= 0; i--) {
     if (SCRIPT[i].scene) { currentIdx = i; playFromCurrent(); return; }
@@ -1537,18 +1543,18 @@ function prevScene() {
 }
 
 function nextLine() {
-  stopAll();
+  cooldownNav(); stopAll();
   currentIdx = Math.min(currentIdx+1, SCRIPT.length-1);
   while (currentIdx < SCRIPT.length-1 && (SCRIPT[currentIdx].scene || SCRIPT[currentIdx].acot)) currentIdx++;
   playFromCurrent();
 }
 function prevLine() {
-  stopAll();
+  cooldownNav(); stopAll();
   currentIdx = Math.max(currentIdx-1, 0);
   while (currentIdx > 0 && (SCRIPT[currentIdx].scene || SCRIPT[currentIdx].acot)) currentIdx--;
   playFromCurrent();
 }
-function repeatLine() { stopAll(); playFromCurrent(); }
+function repeatLine() { cooldownNav(); stopAll(); playFromCurrent(); }
 function jumpTo(i) { stopAll(); currentIdx = i; playFromCurrent(); }
 function goSetup() {
   stopAll();
