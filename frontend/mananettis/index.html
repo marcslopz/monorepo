@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Apuntador Mañanettis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0f0e0c;
+    --surface: #1a1916;
+    --surface2: #252320;
+    --border: #333129;
+    --gold: #c9a84c;
+    --gold-dim: #7a6530;
+    --red: #c0392b;
+    --green: #27ae60;
+    --text: #e8e4dc;
+    --text-dim: #8a8478;
+    --text-muted: #555047;
+    --my-color: #c9a84c;
+    --other-color: #8a8478;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SETUP SCREEN */
+  #setup {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+  }
+
+  .title-block {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .title-block h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .title-block .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 1rem;
+  }
+
+  .field-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+
+  input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+  }
+
+  select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 1.25rem;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--gold);
+    color: #0f0e0c;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:active { opacity: 0.8; }
+
+  .info-box {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    text-align: center;
+    max-width: 480px;
+  }
+
+  /* PLAYER SCREEN */
+  #player {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .player-header {
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+  }
+
+  .player-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .line-count {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.4s ease;
+  }
+
+  .main-display {
+    flex: 1;
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .scene-badge {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    display: inline-block;
+    align-self: flex-start;
+  }
+
+  .line-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: border-color 0.3s;
+  }
+
+  .line-card.is-mine {
+    border-color: var(--gold-dim);
+    background: #1e1b12;
+  }
+
+  .speaker-name {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .speaker-name.mine { color: var(--gold); }
+  .speaker-name.other { color: var(--text-muted); }
+
+  .line-text {
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--text);
+  }
+
+  .stage-dir {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* Status zone */
+  .status-zone {
+    padding: 0 1.25rem;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .status-pill.reading {
+    background: #0d1f1a;
+    border: 1px solid #1a4a38;
+    color: #4ade80;
+  }
+
+  .status-pill.your-turn {
+    background: #1f1500;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+  }
+
+  .status-pill.paused {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .countdown-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .countdown-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 1s linear;
+  }
+
+  /* Controls */
+  .controls {
+    padding: 1rem 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ctrl-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 12px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-align: center;
+  }
+  .btn:active { background: var(--surface2); }
+
+  .btn.btn-play {
+    background: var(--gold);
+    color: #0f0e0c;
+    border-color: var(--gold);
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .btn.btn-play:active { opacity: 0.85; }
+
+  .btn.btn-danger {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  /* Script list */
+  .script-list-wrap {
+    border-top: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+  }
+
+  .script-list-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .script-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .sl-item {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.1s;
+    line-height: 1.5;
+  }
+  .sl-item:active { background: var(--surface2); }
+  .sl-item.active {
+    background: var(--surface2);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .sl-item.is-mine { color: var(--gold); }
+  .sl-item.is-mine.active { border-color: var(--gold-dim); }
+
+  .sl-speaker {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-right: 6px;
+    opacity: 0.7;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    margin-right: 6px;
+    vertical-align: middle;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .finished-screen {
+    text-align: center;
+    padding: 3rem 1.5rem;
+  }
+  .finished-screen h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+    font-size: 26px;
+    margin-bottom: 8px;
+  }
+  .finished-screen p {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="title-block">
+    <h1>El cadáver del señor García</h1>
+    <div class="subtitle" id="subtitle">Apuntador Mañanettis</div>
+  </div>
+
+  <div class="card">
+    <span class="field-label">¿Quién eres?</span>
+    <select id="actorSelect">
+      <option value="">— Selecciona tu nombre —</option>
+      <option value="ABELARDO">Marcos (Abelardo)</option>
+      <option value="ENCARNA">Encarna (Hortensia)</option>
+      <option value="YUREMA">Yurema (Hipo / Hipólita)</option>
+      <option value="AURI">Auri (Ramona / Forense)</option>
+      <option value="LAURA">Laura (Petra / Juez)</option>
+      <option value="YVONNE">Yvonne (Olga / García)</option>
+      <option value="ESTEFANIA">Estefanía (Delfina)</option>
+      <option value="LOREA">Lorea (Manuela)</option>
+    </select>
+
+    <span class="field-label">Pausa para decir tu línea</span>
+    <div class="slider-row">
+      <input type="range" id="pauseSecs" min="3" max="20" value="8">
+      <span id="pauseLabel" style="font-size:14px; color:var(--gold); min-width:40px; text-align:right">8s</span>
+    </div>
+
+    <span class="field-label">Voz</span>
+    <select id="voiceSelect">
+      <option value="">Cargando voces...</option>
+    </select>
+
+    <span class="field-label">Velocidad de lectura</span>
+    <select id="rateSelect">
+      <option value="0.8">Lenta</option>
+      <option value="1" selected>Normal</option>
+      <option value="1.15">Rápida</option>
+    </select>
+
+    <span class="field-label">Empezar desde</span>
+    <select id="startFrom">
+      <option value="0">Desde el principio</option>
+      <option value="escena1">Escena Primera</option>
+      <option value="escena2">Escena Segunda</option>
+      <option value="escena3">Escena Tercera</option>
+      <option value="escena4">Cuarta Escena</option>
+    </select>
+
+    <button class="btn-primary" onclick="startSession()">Comenzar ensayo</button>
+  </div>
+
+  <div class="info-box">
+    La app lee las líneas de los demás en voz alta.<br>
+    Cuando llega a las tuyas, hace una pausa<br>
+    para que las digas tú.
+  </div>
+</div>
+
+<!-- PLAYER -->
+<div id="player">
+  <div class="player-header">
+    <span class="player-title">El cadáver del señor García</span>
+    <span class="line-count" id="lineCount">1 / —</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+  <div class="main-display" id="mainDisplay">
+    <div class="line-card" id="lineCard">
+      <div class="speaker-name" id="speakerName"></div>
+      <div class="line-text" id="lineText"></div>
+    </div>
+  </div>
+
+  <div class="status-zone" id="statusZone"></div>
+
+  <div class="controls">
+    <div class="ctrl-row">
+      <button class="btn" onclick="prevLine()">← Anterior</button>
+      <button class="btn btn-play" id="playBtn" onclick="togglePlay()">⏸ Pausar</button>
+      <button class="btn" onclick="nextLine()">Siguiente →</button>
+    </div>
+    <div class="ctrl-row">
+      <button class="btn" onclick="repeatLine()">↺ Repetir</button>
+      <button class="btn btn-danger" onclick="goSetup()">✕ Salir</button>
+    </div>
+  </div>
+
+  <div class="script-list-wrap">
+    <div class="script-list-label">Guion completo</div>
+    <div class="script-list" id="scriptList"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// GUION COMPLETO — El cadáver del señor García (Javier Poncela)
+// Con todas las correcciones anotadas
+// ============================================================
+const SCRIPT = [
+  {s:"ESCENA", t:"ESCENA PRIMERA", scene:true},
+  {s:"ACOT", t:"Voces gritando desde dentro. (\"Tiros, han sonado tiros, en el salón, vienen del salón....\")", acot:true},
+  {s:"ABELARDO", t:"Pero, ¿qué es esto?"},
+  {s:"HIPO", t:"Hay alguien en el sofá."},
+  {s:"RAMONA", t:"¡Un muerto! ¡Ay, madre mía, un muerto!"},
+  {s:"HIPO", t:"Que nadie se acerque."},
+  {s:"HORTENSIA", t:"(Abrazándose frenética a ABELARDO) ¡¡Abelardo!!..."},
+  {s:"RAMONA", t:"¡Ay, que en la vida había visto a un muerto!..."},
+  {s:"ABELARDO", t:"(A RAMONA) ¡Cállate! ¿No ves que asustas a la señora?"},
+  {s:"HORTENSIA", t:"¡Abelardo!, ¡Vámonos de casa! ¡Vámonos de Barcelona! ¡Vámonos de España! ¡Vámonos de Europa!"},
+  {s:"ABELARDO", t:"Hortensia, por favor... Ramona... ¡Cójala! (Le traspasa HORTENSIA.)"},
+  {s:"HORTENSIA", t:"¡Qué me den algo! ¡Que me den algo! ¡Qué si no me dan algo, me va a dar algo!"},
+  {s:"RAMONA", t:"Señorito: ¿le doy algo?"},
+  {s:"HIPO", t:"No le de nada. Es mejor que respire profundo. (RAMONA se lleva a HORTENSIA a un sillón)."},
+  {s:"RAMONA", t:"¡Ay, Virgen santa!, que yo nunca había visto muerto a un muerto!"},
+  {s:"HIPO", t:"Pero, ¿quién es este hombre? ¿Por dónde ha entrado?"},
+  {s:"RAMONA", t:"(Señalando a la puerta de la derecha.) ¡Por el balcón de la sala! ¿No ve usted que está abierto?"},
+  {s:"HORTENSIA", t:"El balcón... El humo... El muerto... los tiros..."},
+  {s:"HIPÓLITA", t:"¡Abelardo! ¡¡Abelardo, no te acerques!!"},
+  {s:"HORTENSIA", t:"Los tiros... El muerto... El humo... El balcón..."},
+  {s:"RAMONA", t:"¡No se acerque, señorito!"},
+  {s:"HORTENSIA", t:"Nosotros... El balcón... El muerto... Los tiros..."},
+  {s:"ABELARDO", t:"Pero es necesario saber si está o no está... (avanzada hacia el diván)."},
+  {s:"HIPO", t:"¡No te acerques, primo, por favor!"},
+  {s:"ABELARDO", t:"Pues algo habrá que hacer..."},
+  {s:"RAMONA", t:"Avisen ustedes al juez, señoritos"},
+  {s:"HORTENSIA", t:"El juez, el muerto, los tiros, el balcón... (Ramona calma a Hortensia)"},
+  {s:"ABELARDO", t:"¡Eso es! Hay que llamar al juez."},
+  {s:"HIPO", t:"Claro, llamemos a un juez."},
+  {s:"ABELARDO", t:"¿Cómo se llama a un juez?"},
+  {s:"HIPO", t:"Por el apellido. Yo creo que por el apellido."},
+  {s:"HORTENSIA", t:"¿Apellido? Claro, ese pobre desgraciado tendrá un apellido."},
+  {s:"HIPÓLITA", t:"No, el apellido del juez..."},
+  {s:"ABELARDO", t:"No sé yo, no sé..."},
+  {s:"RAMONA", t:"Aquí ninguno dice lo que sabe."},
+  {s:"HIPO", t:"(Rectificando) Se dice \"sabe lo que se dice\"."},
+  {s:"HORTENSIA", t:"¿Qué dice?"},
+  {s:"RAMONA", t:"No sabe."},
+  {s:"ABELARDO", t:"¡Calma! Tengamos un poco de calma, por lo que más queráis... ¿Y si ese hombre es un herido grave? ¡No se le puede dejar morir esperando al juez!"},
+  {s:"HIPO", t:"¡Claro!"},
+  {s:"HORTENSIA", t:"¿Entonces?"},
+  {s:"ABELARDO", t:"Hay que reconocerlo. Reconócelo tú, Hipo."},
+  {s:"HIPO", t:"¿Yo?"},
+  {s:"ABELARDO", t:"¿No eres médico?"},
+  {s:"HIPO", t:"Bueno... en el último año de carrera. (Va hacia el diván.)"},
+  {s:"ABELARDO", t:"Mujer, reconocerás que eso es prácticamente ser médico."},
+  {s:"HIPO", t:"Claro, soy prácticamente médico; lo reconozco. (Inclinándose sobre el SEÑOR GARCIA) ¡Pues no lo reconozco!"},
+  {s:"ABELARDO", t:"¿Qué?"},
+  {s:"HIPO", t:"Que es la primera vez que lo veo."},
+  {s:"HORTENSIA", t:"(levantándose) Pero, ¿le has visto?"},
+  {s:"ABELARDO", t:"¿Lo has visto?"},
+  {s:"RAMONA", t:"¿Cómo es? (Se agolpan todos a su alrededor.)"},
+  {s:"HIPO", t:"Es... Es... ¡Ya no me acuerdo cómo es! (Vuelve al diván y mira de nuevo.)"},
+  {s:"HORTENSIA", t:"¿Cómo es?"},
+  {s:"HIPO", t:"Es moreno."},
+  {s:"HORTENSIA", t:"¿Moreno?"},
+  {s:"RAMONA", t:"¡Dios mío, es moreno!"},
+  {s:"HIPO", t:"Y con unos bigotes como el manillar de una bicicleta."},
+  {s:"RAMONA", t:"Dios mío, tiene bigotes."},
+  {s:"ABELARDO", t:"Pero, ¿está muerto o está herido?"},
+  {s:"HORTENSIA", t:"¿Cómo está?"},
+  {s:"HIPO", t:"Feísimo. Está feísimo."},
+  {s:"RAMONA", t:"Dios mío, está... Bueno, a ver, tampoco le insulte, digo yo..."},
+  {s:"ABELARDO", t:"Dejadme mirar a mi."},
+  {s:"HIPO", t:"¡No! ¿Y si se trata de un crimen? No hay que tocarle, no hay que moverle, no hay que pisar alrededor, porque se borrarán las huellas..."},
+  {s:"RAMONA", t:"¡Dios mío!, ¡Podría ser un crimen!"},
+  {s:"HORTENSIA", t:"Un crimen... Las huellas... El muerto...El balcón... ¡¡Abelardo!!"},
+  {s:"ABELARDO", t:"Tranquila querida. Respira, tú respira."},
+  {s:"HIPO", t:"Volveré a acercarme. (Avanza de puntillas hacia el diván)."},
+  {s:"ABELARDO", t:"¿Hay huellas?"},
+  {s:"HIPO", t:"(Examinando al SEÑOR GARCÍA) ¡Hum!..."},
+  {s:"TODOS", t:"¿Qué? ¿Qué?"},
+  {s:"HIPO", t:"No me gusta nada..."},
+  {s:"RAMONA", t:"Dios mío, no le gusta. El pobre debe ser feo de narices."},
+  {s:"ABELARDO", t:"¿Quieres callarte?"},
+  {s:"HIPO", t:"¡Silencio! A ver el corazón... (Auscultando a GARCÍA.) Nada... Ni un latido."},
+  {s:"ABELARDO", t:"¿Muerto?"},
+  {s:"HIPO", t:"Muerto. (Emoción)."},
+  {s:"HORTENSIA", t:"¡¡Oh!!"},
+  {s:"RAMONA", t:"¡Muerto!"},
+  {s:"ABELARDO", t:"¡Muerto!"},
+  // Página 3
+  {s:"HORTENSIA", t:"(Rezando apresuradamente) Padre cielos, que estás en los nuestros, nombrizcado sea el tu santo, reinamos el tu vengo, y no nos dejes tentar..."},
+  {s:"ABELARDO", t:"(A Ramona) ¡Atiende a la señora! (A HIPO) ¿Estás seguro de que está muerto?"},
+  {s:"HIPO", t:"(Arrogante) ¿Soy médico o no soy médico?"},
+  {s:"ABELARDO", t:"No sé, los médicos a veces os ilusionáis con cualquier cosita..."},
+  {s:"HIPO", t:"¡Muerto y bien muerto! No nos queda más que llamar al Juzgado."},
+  {s:"ABELARDO", t:"(Se sienta ante el teléfono seguido de HIPO). ¿Cuál será el número del Juzgado?"},
+  {s:"HIPO", t:"(Coge la guía telefónica y se la da) En la jota... mira en la jota."},
+  {s:"HORTENSIA", t:"(A RAMONA). Pero, ¿quién puede ser? ¿Por qué habrá venido a matarse aquí, Ramona?"},
+  {s:"RAMONA", t:"¿Usted no le conoce, señorita?"},
+  {s:"HORTENSIA", t:"Así, de espaldas, me parece que no... ¡Pero yo no le miro la cara!"},
+  {s:"RAMONA", t:"¡No, claro que no! ¡Cualquiera le mira la cara! Con esos bigotes..."},
+  {s:"ABELARDO", t:"Ayúdame tú. Yo solo no puedo. Estoy nerviosísimo."},
+  {s:"HIPO", t:"(Pasando hojas). Efe, ge, hache, i... Jota, Jota, Jota...(Siguiendo las columnas de nombres con el dedo) Ja- Ja. Ja."},
+  {s:"ABELARDO", t:"Ja. Ja. Ja. Ja."},
+  {s:"HIPO", t:"Ja. Ja."},
+  {s:"ABELARDO", t:"Ja. Ja. Ja. Ja."},
+  {s:"HORTENSIA", t:"¡Por Dios, callaos!"},
+  {s:"RAMONA", t:"Cualquiera que los oiga..."},
+  {s:"ABELARDO", t:"Je. Je. Ji. Ji"},
+  {s:"HIPO", t:"Ji Ji Ji Ji... Jiménez, Jiménez."},
+  {s:"ABELARDO", t:"Jiménez. Jiménez, ¿Dónde acabarán los Jiménez?"},
+  {s:"ACOT", t:"(Dentro suena un timbre. Todos suspenden lo que hacen y se miran un poco sobrecogidos.)", acot:true},
+  {s:"HORTENSIA", t:"¡Mallan! ¡Digo, llaman!"},
+  {s:"RAMONA", t:"¡Llaman a la puerta, señor!"},
+  {s:"ACOT", t:"(Suena otra vez)", acot:true},
+  {s:"HORTENSIA", t:"¡Otra vez!. Han llamado dos veces, Abelardo."},
+  {s:"ABELARDO", t:"¿Y qué tiene eso de extraño? Ramona, ve a abrir."},
+  {s:"RAMONA", t:"¡Ay, yo no, señorito!"},
+  {s:"ABELARDO", t:"¿Pero qué dices?"},
+  {s:"RAMONA", t:"Yo con todo esto del muerto tengo miedo, y estoy mala del corazón y mi novio dice que si me asusto, me muero..."},
+  {s:"ABELARDO", t:"¡Vaya! Acompáñala tú, Hipo. (Mirando la guía). Jiménez. Jiménez. Jordá."},
+  {s:"HIPO", t:"Yo soy médico y no puedo separarme de aquí ni un instante."},
+  {s:"ACOT", t:"(Suena el timbre por tercera vez)", acot:true},
+  {s:"ABELARDO", t:"Yo iré... ¡Pues sí que estamos buenos!"},
+  {s:"HORTENSIA", t:"¡Madre mía, qué valiente es!"},
+  {s:"HIPO", t:"(Siempre consultando la guía). Jurado. Justo. Juvenal. ¡Juzgado!. Aquí. Juzgado de guardia. Treinta y cuatro ciento sesenta y ocho noventaitrés Treinta y cuatro ciento dieciocho. Treinta y cuatro ciento ocho. (Marcando) Tres."},
+  // Página 4
+  {s:"HIPO", t:"Cuatro. Cinco. Nueve. Seis. Esto es. ¡Oiga! ¡Oiga! ¿El treinta y uno cuatrocientos cuarenta? ¿Qué? Oiga... ¿Es el juzgado de guardia?"},
+  {s:"HORTENSIA", t:"¿Contestan?"},
+  {s:"HIPO", t:"Diga... ¿Cómo? ¿qué número he marcado yo? Era el treinta y tres veinticinco... No. El novecientos... ¡Voy a ver! (Hojea la guía de nuevo)."},
+  {s:"PETRA", t:"(desde dentro)¿Pero es posible? ¿Pero qué me cuenta usted?"},
+  {s:"HORTENSIA", t:"¡Válgame Dios! La portera... Y con lo que grita al hablar..."},
+  {s:"PETRA", t:"(Dentro) ¡¡Pero si es que parece una película, señorito!!.¡¡Igualito que una película!!"},
+  {s:"HIPO", t:"¿Qué es eso? ¿Qué pasa ahí fuera?"},
+  {s:"RAMONA", t:"Es la portera del edificio."},
+  {s:"HIPO", t:"¿Por qué grita?"},
+  {s:"HORTENSIA", t:"Está un poco sorda."},
+  {s:"ABELARDO", t:"(Entrando) Pasa, Petra, pero procura bajar la voz."},
+  {s:"PETRA", t:"(A grito pelado). ¡¡Buenas noches!!"},
+  {s:"HIPO", t:"(Al teléfono) ¡Chits! Que no me entienden; Oiga... Oiga... Pregunto si es el Juzgado de guardia."},
+  {s:"PETRA", t:"¡¡¿Que me dice el señorito, que ha venido a matarse aquí un individuo?!!"},
+  {s:"HORTENSIA", t:"Sí; eso es; se ha matado aquí un señor que ha entrado por el balcón; pero más bajo, por caridad..."},
+  {s:"PETRA", t:"(Viendo al SEÑOR GARCIA) ¡¡Anda!! ¡¡Si está ahí, en la cheslon!!"},
+  {s:"ABELARDO", t:"Sí. Por eso le decíamos que hablase bajo."},
+  {s:"PETRA", t:"(Como siempre). ¡¡Claro, claro!! ¡¡Yo he oído los tiros desde abajo!!"},
+  {s:"HORTENSIA", t:"¡Mira que es bruta!"},
+  {s:"RAMONA", t:"¡Qué garganta!"},
+  {s:"PETRA", t:"¡¡Y me he dicho: Petra, tienes que subir, que por algo eres la portera. Eso si, no he dejado pasar a las señoras de ahí al lado!!"},
+  {s:"HORTENSIA", t:"¿Las señoras de al lado? ¿Mis vecinas?"},
+  {s:"PETRA", t:"¡¡Sí señora!! Querían entrar a molestarla para saber lo que había pasado!!"},
+  {s:"HORTENSIA", t:"¡Ramona!"},
+  {s:"RAMONA", t:"Señorita..."},
+  {s:"HORTENSIA", t:"Pasa un momento y diles a Delfina y Manuela que tengan la bondad de venir, que las necesito."},
+  {s:"RAMONA", t:"Es que la escalera... la oscuridad... el corazón.. Vamos, que no."},
+  {s:"HORTENSIA", t:"Ve a abrir y ya de paso puedes marcharte a tu casa."},
+  {s:"RAMONA", t:"Gracias, señorita.(antes de salir) Dios mío, protege esta casa del mal. (sale)."},
+  {s:"PETRA", t:"(Mirando al muerto) ¡¡Pobre hombre!! ¡¡Hasta hoy no había visto yo a un suicida!! ¿Y ustedes?"},
+  {s:"HORTENSIA", t:"(A Abelardo e Hipo) No le contestéis, a ver si se calla."},
+  {s:"ABELARDO", t:"(Al teléfono) Oiga... Oiga..."},
+  {s:"PETRA", t:"¡¡Hay que ver, ¿eh?!! ¡¡¿Eh, señorita Hortensia?!! ¡¡¿Eh?!! ¡¡Hay que ver!!"},
+  {s:"HORTENSIA", t:"¡¡Lo que es la vida!! ¿Eh?!!"},
+  {s:"PETRA", t:"¡¡Lo que es la vida!! ¿Eh?!!"},
+  {s:"HORTENSIA", t:"(Como antes) ¡Uf!"},
+  // Página 5
+  {s:"PETRA", t:"¡¡Yo llevo quince años de portera y ya no me extraña nada; pero, hay que ver lo que es la vida, ¿eh?!!"},
+  {s:"HORTENSIA", t:"¡Uf!"},
+  {s:"PETRA", t:"(Inclinándose sobre el SEÑOR GARCÍA). ¡¡Pues parece simpático!!"},
+  {s:"HORTENSIA", t:"(Aterrada) ¡¡No le toque!!"},
+  {s:"ABELARDO", t:"¡No le toques!. ¡No le toques, que hay que esperar a que venga el juez y le estamos avisando por teléfono!"},
+  {s:"HORTENSIA", t:"¿Contestan o no?"},
+  {s:"HIPO", t:"Nada, no hay manera de comunicar con el Juzgado."},
+  {s:"PETRA", t:"Si quieren yo me acerco."},
+  {s:"HIPO", t:"Pues no es mala idea."},
+  {s:"ABELARDO", t:"¿Lo haría usted?"},
+  {s:"PETRA", t:"¡¡Yo estoy siempre allí donde el deber me llama!!"},
+  {s:"HORTENSIA", t:"Eso es. Que se marche."},
+  {s:"PETRA", t:"¿Qué tengo que decir?"},
+  {s:"ABELARDO", t:"¿Qué se dice en estos casos?"},
+  {s:"HIPO", t:"Pues... Que diga que estábamos reunidos cenando para celebrar vuestro compromiso como futuros esposos, cuando en medio de la alegría y del silencio de la noche, justo cuando empezábamos a jugar unas manitas de póker..."},
+  {s:"HORTENSIA", t:"Eso es muy largo. ¿Al juez qué le importa nuestra boda ni la partida de póker!"},
+  {s:"ABELARDO", t:"Dame un papel (Se dispone a escribir). Lo mejor es ponerle cuatro líneas."},
+  {s:"HORTENSIA", t:"¡Eso, eso!"},
+  {s:"ABELARDO", t:"SEÑOR JUEZ DE GUARDIA: LOS ABAJO FIRMANTES, INQUILINOS Y AMIGOS ÍNTIMOS DE LA FINCA NÚMERO 119 DE LA CALLE SERRANO LE RUEGAN A USTED QUE TENGA LA BONDAD DE VENIR A LEVANTAR..."},
+  {s:"HORTENSIA", t:"¡No pongas \"levantar\"!"},
+  {s:"HIPO", t:"Pon incorporar, que es más suave."},
+  {s:"ABELARDO", t:"A mi eso tampoco me parece"},
+  {s:"PETRA", t:"¡¡Recoger!!"},
+  {s:"ABELARDO", t:"QUE TENGA LA BONDAD DE VENIR A RECOGER LOS RESTOS DE UN DESDICHADO QUE HA TENIDO A BIEN SUICIDARSE A TIROS EN UN DIVÁN... QUEDAMOS A LA ESPERA DE... (sigue escribiendo)"},
+  {s:"PETRA", t:"Pero ¿me harán caso?"},
+  {s:"HIPO", t:"Si, mujer ¿cómo no van a hacerte caso?"},
+  {s:"PETRA", t:"¡¡Es que si no me hacen caso!! ¡¡Bueno, si no me hacen caso!!, ¡¡¡Me van a oír!!!"},
+  {s:"HIPO", t:"Eso seguro..."},
+  {s:"ABELARDO", t:"Llega al Juzgado, pregunta por el juez y manda que le entreguen esto."},
+  {s:"PETRA", t:"Voy volando (sale)"},
+  {s:"HORTENSIA", t:"¿Y estará el juez dispuesto a estas horas?"},
+  {s:"HORTENSIA", t:"Claro! El juez está dispuesto a todas horas."},
+  {s:"ABELARDO", t:"¡Pues claro!"},
+  // Página 6 - ESCENA SEGUNDA
+  {s:"ESCENA", t:"ESCENA SEGUNDA", scene:true},
+  {s:"ACOT", t:"(Se oye dentro un rumor de voces que se acerca. Enseguida, por la izquierda entran DELFINA y MANUELA)", acot:true},
+  {s:"DELFINA", t:"(Con voz muy teatral). ¡Hortensia! ¡Amiga mía!..."},
+  {s:"HORTENSIA", t:"¡Ay Delfina! (Se abrazan dramáticamente)."},
+  {s:"MANUELA", t:"¡Qué barbaridad y qué atrocidad!"},
+  {s:"HORTENSIA", t:"Ni que lo digas, Manuela"},
+  {s:"MANUELA", t:"Mi hermana y yo ya nos hemos enterado de todo."},
+  {s:"DELFINA", t:"Y estamos aterradas, ¿verdad?"},
+  {s:"MANUELA", t:"Aterradas y atónitas."},
+  {s:"DELFINA", t:"Esto es, aterradas y atónitas."},
+  {s:"MANUELA", t:"Y consternadas."},
+  {s:"DELFINA", t:"Esto es: aterradas, atónitas y consternadas. Habríamos entrado nada más oír los tiros, pero la portera nos hizo comprender que podíamos molestar..."},
+  {s:"MANUELA", t:"¿Y cómo ha podido ocurrir esto?"},
+  {s:"DELFINA", t:"¿Dónde está? ¿Dónde está?(Descubriendo al SEÑOR GARCÍA). ¡Oh! ¡No quiero verlo!... ¡No lo mires, Manuela! ¡No lo mires!"},
+  {s:"MANUELA", t:"No, Delfina, no lo miro."},
+  {s:"DELFINA", t:"Y entrar así, de pronto, por el balcón, para matarse a tiros en una casa ajena."},
+  {s:"MANUELA", t:"¡Jesús! La Humanidad está dejada de la mano del Altísimo..."},
+  {s:"DELFINA", t:"Te habrá estropeado el diván... ¡Qué lástima; recién forrado!"},
+  {s:"MANUELA", t:"Y ¿quién es el infeliz?"},
+  {s:"ABELARDO", t:"No sabemos nada. No podemos tocarle. Esperamos al juez de guardia."},
+  {s:"MANUELA", t:"Claro, claro..."},
+  {s:"DELFINA", t:"¿Llevas tú el bolso, Manuela?"},
+  {s:"MANUELA", t:"(Que lleva un bolso de señora en la mano) Sí, Delfina yo lo llevo."},
+  {s:"DELFINA", t:"Es por si me hicieran falta las sales. (Sentándose; A HORTENSIA)."},
+  {s:"HORTENSIA", t:"Ha sido horroroso. Imagínate que habíamos terminado de cenar y estábamos..."},
+  {s:"MANUELA", t:"(Por HIPO, a HORTENSIA). Esa señorita ¿es hermana de Abelardo?"},
+  {s:"HIPO", t:"(Que lo ha oído) Soy su prima. He venido para celebrar la pedida de mano."},
+  {s:"DELFINA", t:"¡Hay que ver! ¡Qué ocasión tan horrible para conocernos!"},
+  {s:"HIPO", t:"Si, la verdad."},
+  {s:"MANUELA", t:"Claro que ahora siempre podremos decir que nos conocimos al lado de la muerte."},
+  {s:"DELFINA", t:"Ay si, tienes razón."},
+  {s:"HIPO", t:"¿No les parece un poco tétrico?"},
+  {s:"DELFINA", t:"¡Qué hermosa frase! Nos conocimos al lado de la muerte."},
+  {s:"ACOT", t:"(Dentro suena un timbre).", acot:true},
+  {s:"HORTENSIA", t:"¡El juez!"},
+  {s:"ABELARDO", t:"Por fin"},
+  {s:"HORTENSIA", t:"Y la criada se ha ido."},
+  // Página 7
+  {s:"MANUELA", t:"No se preocupen, yo abriré. Debe ser Olga."},
+  {s:"ABELARDO", t:"¿Olga la recitadora?"},
+  {s:"HORTENSIA", t:"Estará preocupada."},
+  {s:"MANUELA", t:"Lleva un rato en la escalera sin atreverse a entrar. (sale)"},
+  {s:"HIPO", t:"¿Quién es esa Olga?"},
+  {s:"DELFINA", t:"La vecina del segundo. Es una poeta rusa."},
+  {s:"HIPO", t:"Caramba."},
+  {s:"OLGA", t:"(Muy grave, como en las visitas de pésame) Buenas noches, querido amigo... No le digo a usted nada; valor; hay que ser hombres. (A HORTENSIA) Salud, Hortensia. Tampoco a usted le digo nada; valor; hay que ser mujeres. (Mirando desde lejos a GARCÍA). ¡Qué barbaridad! ¡Qué barbaridad!"},
+  {s:"HORTENSIA", t:"Olga, te presento a Hipólita, prima de Abelardo.."},
+  {s:"HIPO", t:"Encantada"},
+  {s:"OLGA", t:"Olga Skerenovka Putchenko. para servirla."},
+  {s:"HORTENSIA", t:"Gracias por haber bajado, Olga."},
+  {s:"OLGA", t:"Me avisó la portera. Debería estar prohibido que una persona pueda entrar a suicidarse en una casa ajena."},
+  {s:"HORTENSIA", t:"Cierto. ¿No tendría otro sitio donde matarse?"},
+  {s:"ABELARDO", t:"Pues al parecer no."},
+  {s:"DELFINA", t:"¡Con lo grande y bonita que es Barcelona!"},
+  {s:"HIPO", t:"O Tarragona. Toda la provincia de Tarragona es preciosa."},
+  {s:"MANUELA", t:"O la Coruña, sin ir más lejos..."},
+  {s:"OLGA", t:"Stalingrado es mejor."},
+  {s:"ABELARDO", t:"Pues no. Lo ha hecho aquí. Y ¿por qué? ¿Por qué precisamente aquí, en la casa de mi prometida?"},
+  {s:"HIPO", t:"En cuanto llegue el juez lo sabremos."},
+  {s:"ABELARDO", t:"¡Eso espero porque es una cosa que no me deja vivir!...."},
+  {s:"HORTENSIA", t:"¡Abelardo!"},
+  {s:"ABELARDO", t:"Lo mejor es que no digas nada, Hortensia.."},
+  {s:"HORTENSIA", t:"¡Pero Abelardo! ¿Qué estás insinuando?"},
+  {s:"ABELARDO", t:"Esta casa es tuya... Tú sola vives en ella... Yo me enamoro de ti. Decidimos casarnos. Hoy nos reunimos aquí con mi prima a celebrarlo... Y un hombre entra por el balcón y se pega un tiro en tu propio saloncito. ¿Por qué se mete en tu saloncito? ¿Por qué se tumba en tú diván?"},
+  {s:"HORTENSIA", t:"¡Abelardo, calla! ¡Abelardo, no sigas! ¡Ay, que me da vueltas todo!"},
+  {s:"DELFINA", t:"Denle aire, denle aire..."},
+  {s:"HIPO", t:"Pero, hombre, Abelardo... ¡Parece mentira!"},
+  {s:"OLGA", t:"Y... ¿Cómo es él?"},
+  {s:"ABELARDO", t:"Cómo es quién."},
+  {s:"OLGA", t:"El difunto. ¿Es joven?"},
+  {s:"DELFINA", t:"Seguro que es joven."},
+  {s:"MANUELA", t:"Se ve que tiene buena planta."},
+  {s:"DELFINA", t:"A ver, para ser amigo de Hortensia..."},
+  {s:"HORTENSIA", t:"¿Vosotras también? Pero ¿qué estáis insinuando?"},
+  // Página 8
+  {s:"ABELARDO", t:"Eso digo yo. Que insinúe yo tiene un pase, pero ustedes..."},
+  {s:"HIPO", t:"Es moreno y con bigotes."},
+  {s:"OLGA", t:"¡A ha! Con bigotes, ¿eh? (Se va acercando a García). ¿Y ha aparecido ya la pistola?"},
+  {s:"HIPO", t:"¡No le toque!. Hay que esperar al juez que estará llegando."},
+  {s:"ABELARDO", t:"A mi me comen los nervios."},
+  {s:"HORTENSIA", t:"¡Pero Abelardo! ¡Es que no entiendo qué le pasa! ¡Qué os pasa a todos!"},
+  {s:"DELFINA", t:"Disculpanos, querida, entenderás que es una situación de lo más inusual"},
+  {s:"MANUELA", t:"Si. Inusual y paradigmática."},
+  {s:"DELFINA", t:"Eso. Inusual y paradigmática."},
+  {s:"HIPO", t:"Así que es usted una poeta rusa"},
+  {s:"OLGA", t:"A ha."},
+  {s:"HIPO", t:"Pues mientras llega o no llega el juez... nos podría recitar algo. Ni que sea para aligerar la tensión..."},
+  {s:"ABELARDO", t:"¡Hombre! El momento no es el más oportuno, ¡vamos! creo yo..."},
+  {s:"DELFINA", t:"Tiene razón, ayudará a aliviar el momento.."},
+  {s:"ABELARDO", t:"(Nervioso). Pero ¿y ese juez? ¿Por qué no viene ese juez? (se sienta)."},
+  {s:"OLGA", t:"También mi padre murió así..."},
+  {s:"HORTENSIA", t:"¿Es posible?"},
+  {s:"DELFINA", t:"¿De veras?"},
+  {s:"MANUELA", t:"¡Qué me cuenta!"},
+  {s:"OLGA", t:"Una noche fui a entrar en su despacho... Era yo pequeñita... Fui a entrar en su despacho y lo encontré muerto... de tres balazos."},
+  {s:"HORTENSIA", t:"¡Dios mío!"},
+  {s:"DELFINA", t:"¿Dónde se pegó los tiros su padre?"},
+  {s:"OLGA", t:"En Rusia."},
+  {s:"DELFINA", t:"No. Yo decía en qué sitio."},
+  {s:"OLGA", t:"En la cabeza"},
+  {s:"DELFINA", t:"No, no.... Que en qué sitio de Rusia."},
+  {s:"OLGA", t:"En Stalingrado. Desde entonces todas las noches se me aparece..."},
+  {s:"HORTENSIA", t:"¿Su padre?"},
+  {s:"OLGA", t:"Mi padre, sí. Dicen que algunos muertos... no se van nunca de este mundo..."},
+  {s:"HORTENSIA", t:"¡Por Dios, qué cosas se dicen!"},
+  {s:"HIPO", t:"Yo no creo mucho en esas cosas perro..."},
+  {s:"OLGA", t:"(Interrumpiendo) Unas veces se me aparece en mi alcoba; otras, al volver de trabajar en el teatro, le veo delante de mí, subiendo la escalera; a veces, al entrar en casa, le encuentro sentado en el recibidorrr..."},
+  {s:"HIPO", t:"¡Carray! (Todos se estremecen) En realidad yo proponía que nos recitara unos versos para tranquilizarnos un poco."},
+  {s:"ABELARDO", t:"¿Ustedes creen que es momento de recitar versos?"},
+  {s:"HORTENSIA", t:"Tiene razón. Recitar versos estando aquí... presente... (señala al García)"},
+  // Página 9
+  {s:"DELFINA", t:"Podrían ser versos tristes. Sería más apropiado."},
+  {s:"MANUELA", t:"Es verdad. Siendo tristes..."},
+  {s:"HORTENSIA", t:"Bueno, pero solo a condición de que sean tristes."},
+  {s:"OLGA", t:"Podria recitar \"La muerte galopa sobre montones de esqueletos\""},
+  {s:"HIPO", t:"Yo creo que será lo suficientemente triste."},
+  {s:"HORTENSIA", t:"¿Has oído, Abelardo? Olga va a recitar un poema triste."},
+  {s:"HIPO", t:"No le hagas caso. Se le pasará."},
+  {s:"OLGA", t:"(Se coloca en el centro y se dispone a recitar mirando al techo, con los brazos caídos). \"La muerte galopa sobre montones de esqueletos\". Poema."},
+  {s:"OLGA", t:"(Recitando) Por un campo desierto, gris y blando / Iba la muerte galopando / - los dedos a las crines bien sujetos / iba la Muerte, galopando, / ¡galopando!, sobre montones de esqueletos...."},
+  {s:"UNA VOZ", t:"¿Oigan? ¿Hay alguien en la finca?"},
+  {s:"TODOS", t:"¡Chist, chist!"},
+  {s:"HIPO", t:"¡Hombre, qué oportunidad!"},
+  {s:"OLGA", t:"Iba la muerte galopando..."},
+  {s:"UNA VOZ", t:"¿Hay alguien en la finca?"},
+  {s:"MANUELA", t:"¡Que se callen, caramba!"},
+  {s:"OLGA", t:"Galopando sobre montones de esqueletos..."},
+  {s:"UNA VOZ", t:"¿Es que nadie puede abrir?"},
+  {s:"HIPO", t:"Pero ¿quién será ese cafre? Voy a decirle por el balcón que... (Se va por la derecha. Todos los de la escena quedan callados y sólo se oyen las voces, que no cesan de gritar)"},
+  {s:"UNA VOZ", t:"A ver, que no tenemos toda la noche."},
+  {s:"HIPO", t:"(Desde dentro) ¡¡ES EL JUEZ!!"},
+  {s:"TODOS", t:"¿Qué?"},
+  {s:"HIPO", t:"(Entrando) El juez y el forense. Yo creo que no pueden entrar."},
+  {s:"HORTENSIA", t:"¿Y la portera?"},
+  {s:"HIPO", t:"Se ve que no hay nadie."},
+  {s:"HORTENSIA", t:"Rápido. Hay que tirarles la llave del portal."},
+  {s:"ABELARDO", t:"Una llave. Vamos, una llave."},
+  {s:"DELFINA", t:"Una llave, claro. Nuestra llave. El bolso."},
+  {s:"HIPO", t:"Voy a avisarles. (sale de nuevo)"},
+  {s:"MANUELA", t:"Aquí, aquí. la tengo. No, estas son las de la carbonera"},
+  {s:"HORTENSIA", t:"Yo siempre dejo por aquí una. (Buscando ella por otro sitio)"},
+  {s:"MANUELA", t:"¡Esta es, la encontré!"},
+  {s:"ABELARDO", t:"Démela. Rápido (sale hacia el balcón y entra Hipo)"},
+  {s:"HIPO", t:"¡¡Ya han entrado!!"},
+  {s:"ABELARDO", t:"¿Les has visto entrar?"},
+  {s:"HIPO", t:"No, pero un taxista que está justo debajo reparando su taxi me ha dicho que acaban de entrar dos señores. Se ve que han aprovechado que alguien salía en ese momento."},
+  // Página 10 - (página 11 en el guion original)
+  {s:"ABELARDO", t:"Muy bien. Estemos todos preparados. (todos se sitúan esperando la llegada, atentos a la puerta)"},
+  {s:"HORTENSIA", t:"Si. Todos quietos y que nadie toque nada."},
+  {s:"ABELARDO", t:"Al fin llegó el momento."},
+  {s:"ACOT", t:"(Silencio tenso)", acot:true},
+  {s:"OLGA", t:"Cuando murió mi padre también vinieron el juez y el forense. ¡La vida se repite como un río que conduce el agua en un eterno.... (viendo a Manuela aguantar la risa) ¿se ríe usted?"},
+  {s:"HIPO", t:"(Luchando por contenerse). ¡Puf! ¡Puf! ¡Puuuf! Ay, perdón... ¡Puf! ¡Puf! ¡Puuuf!"},
+  {s:"HORTENSIA", t:"¿Te ocurre algo, querida?. ¿Le ocurre algo?"},
+  {s:"HIPO", t:"(Congestionada de risa) no, nada... serán los nervios..."},
+  {s:"OLGA", t:"Los nervios son traicioneros"},
+  {s:"HIPO", t:"¡Puf! ¡Puf! ¡Puuuf!"},
+  {s:"ABELARDO", t:"Hipólita, por favor."},
+  {s:"HIPO", t:"Perdón perdón. Es que..."},
+  {s:"OLGA", t:"Pero ¿qué es tan divertido?"},
+  {s:"HIPO", t:"Es que no puedo, es que cuanto más la escucho..."},
+  {s:"DELFINA", t:"Ya, ya... yo creo que es por los brazos... ¡Puf! ¡Puf! ¡Puuuf!"},
+  {s:"MANUELA", t:"¡Puf! ¡Puf! ¡Puuuf!"},
+  {s:"ACOT", t:"(Todos empiezan a contagiarse de la risa)", acot:true},
+  {s:"HORTENSIA", t:"Esto es por los nervios, seguro"},
+  {s:"OLGA", t:"Habría que abrir la puerta... (sale) (Todos revientan de risa)"},
+  {s:"ABELARDO", t:"Pero ¿se puede saber qué os pasa?"},
+  {s:"HIPO", t:"Es que nunca he visto a nadie igual."},
+  {s:"HORTENSIA", t:"Yo os digo que son los nervios, seguro."},
+  {s:"ESCENA", t:"ESCENA TERCERA", scene:true},
+  {s:"ACOT", t:"(Entran JUEZ y el FORENSE, seguidos de Olga. Al ver la escena se detienen atónitos. Una pausa. Los demás, sin fijarse en ellos, ríen y ríen)", acot:true},
+  {s:"OLGA", t:"Pasen señores, pasen."},
+  {s:"EL FORENSE", t:"(a ABELARDO). Oiga usted, pero... ¿es aquí donde se ha suicidado un señor?"},
+  {s:"ABELARDO", t:"(A todas) ¡¡El juez y el forense!"},
+  {s:"HORTENSIA", t:"Por Dios, qué estarán pensando de nosotras..."},
+  {s:"EL FORENSE", t:"(Aparte al JUEZ) ¡Vaya una parroquia!. ¿eh?"},
+  {s:"EL JUEZ", t:"¡En treinta y cinco años, Menéndez!... ¡En treinta y cinco años, contados los bisiestos, no he visto una cosa igual!"},
+  {s:"EL FORENSE", t:"Si es que está el mundo que es un asquito..."},
+  {s:"EL JUEZ", t:"Está claro, señores, que el muerto no sería de la familia de ustedes..."},
+  {s:"HORTENSIA", t:"No, señor juez, no..."},
+  {s:"HIPO", t:"Señor juez, permítame que le explique puesto que he sido yo la que ha empezado a.."},
+  {s:"EL JUEZ", t:"(Tajante). ¡Chits, chits, chits! ¡Calma, calma, calma!... Mucha calma. Nada de presentaciones."},
+  {s:"EL FORENSE", t:"¡Calma, claro, calma!...¿qué se habrán creído?"},
+  {s:"EL JUEZ", t:"¡Vaya un caso, Señor, vaya un caso!. Primero, para avisarme, me mandan una carta..."},
+  {s:"EL FORENSE", t:"Como las invitaciones de los banquetes."},
+  {s:"EL JUEZ", t:"Luego empieza a dar gritos una señora que dice que es la portera de la casa."},
+  {s:"FORENSE", t:"Yo traigo un dolor de cabeza..."},
+  {s:"JUEZ", t:"Al cabo de un rato llegamos aquí y venga a gritar sin que nadie nos oiga, ni siquiera la portera."},
+  {s:"HORTENSIA", t:"Es que es sorda."},
+  {s:"FORENSE", t:"Pues no lo parece."},
+  {s:"JUEZ", t:"Y cuando por fin conseguimos subir al lugar del suceso, nos encontramos con esta verbena."},
+  {s:"HORTENSIA", t:"Perdonen ustedes. Soy Hortensia, la dueña del apartamento. Si nos ha encontrado riendo ha sido contra nuestra voluntad. Por lo visto en las horas más trágicas de la vida, el sistema nervioso reacciona de maneras sorprendentes y..."},
+  {s:"JUEZ", t:"¡Menéndez!"},
+  {s:"FORENSE", t:"A las órdenes, señor juez."},
+  {s:"EL JUEZ", t:"Cuando usted guste puede reconocer al suicida."},
+  {s:"EL FORENSE", t:"(Sin poder ocultar su gesto de desagrado). Sí, señor, sí; en cuanto acabe de contar esta señora..."},
+  {s:"HORTENSIA", t:"Ya he concluido."},
+  {s:"EL FORENSE", t:"No importa, repítalo otra vez; era precioso... Empezaba con aquello de \"en las horas más trágicas de la vida..."},
+  {s:"EL JUEZ", t:"Vamos a la reconstrucción del hecho... (Sensación en todos)"},
+  {s:"HORTENSIA", t:"¿La reconstrucción del hecho?"},
+  {s:"DELFINA", t:"Van a reconstruir el hecho..."},
+  {s:"MANUELA", t:"¿Y eso qué es?"},
+  {s:"HIPO", t:"Pues repetir lo que supone que ha ocurrido."},
+  {s:"ABELARDO", t:"Eso es... Repetir el suicidio."},
+  {s:"OLGA", t:"¿Y quién va a matarse ahora?"},
+  {s:"HIPO", t:"Mujer, nadie... Van a hacerlo de mentirijillas."},
+  {s:"EL JUEZ", t:"¡Menéndez! Tenga la bondad de reconocer a la víctima."},
+  {s:"EL FORENSE", t:"(Nerviosísimo. Entre dientes) Sí claro... Pues verá... es que no. Yo eso no puedo hacerlo."},
+  {s:"JUEZ", t:"¿Cómo dice, Menéndez?"},
+  {s:"EL FORENSE", t:"Que yo no reconozco al... A ese... Al... señor aquel..."},
+  {s:"DELFINA", t:"¿Qué dice el forense?"},
+  {s:"MANUELA", t:"Dice que no quiere reconocer al muerto."},
+  {s:"HIPO", t:"¡Es la primera vez que oigo una cosa igual!"},
+  {s:"EL FORENSE", t:"No señor, no le reconozco; porque a mí, suicidas, ¡no! Después de lo que me pasó en Portaferrisa, no. ¡De ninguna manera!"},
+  {s:"HORTENSIA", t:"¿Qué está diciendo?"},
+  {s:"TODOS", t:"¿Qué dice?....Barullo, incluido el juez."},
+  // Página 11 - (12 original)
+  {s:"JUEZ", t:"Vamos a ver, doctor, no tendrá más remedio que cumplir con su deber..."},
+  {s:"EL FORENSE", t:"Sí, señor; mi deber es reconocerle, porque soy forense. Pero, ¿sabe usted por qué soy forense? ¡Pues soy forense, porque no soy dentista, que si fuese dentista no sería forense!. ¿Iba ser yo forense después de lo de Portaferrisa? Ni hablar."},
+  {s:"OLGA", t:"Pero, ¿qué le pasaría a este señor en Portaferrisa?"},
+  {s:"MANUELA", t:"Yo estoy intrigadísima"},
+  {s:"JUEZ", t:"Hasta yo lo estoy.."},
+  {s:"HIPO", t:"Díganos, doctor...¿qué pasó en Portaferrisa?"},
+  {s:"ABELARDO", t:"¿Pero es que nadie va a tener un poco de cordura?"},
+  {s:"EL FORENSE", t:"Si les contase a ustedes lo que me pasó a mí con un suicida en el Carrer de Portaferrisa, no dormirían ustedes en tres noches..."},
+  {s:"MANUELA", t:"Por lo que usted más quiera en el mundo, cuente qué le sucedió"},
+  {s:"EL FORENSE", t:"Pues una noche.. No; sí necesito contarlo; necesito contarlo para convencerme de que aquello no fue una pesadilla... Una noche avisaron al juzgado de que un señor se había suicidado en su propio domicilio..."},
+  {s:"ABELARDO", t:"¿En qué calle? (Indignación de todos)."},
+  {s:"HORTENSIA", t:"¡Abelardo!"},
+  {s:"ABELARDO", t:"Ahhh claro!"},
+  {s:"JUEZ", t:"Caballero, a ver si estamos más atentos..."},
+  {s:"EL FORENSE", t:"Llegué al lado del juez al lugar de los hechos. La casa era triste y lóbrega. Estaba en el último piso. Subimos por una escalera siniestra y empinada. Mis pasos sonaban ¡tac, tac!, y los del juez ¡plom! ¡plom!"},
+  {s:"HORTENSIA", t:"¡Dios mío!"},
+  {s:"MANUELA", t:"Es que se les ve subir, ¿eh?"},
+  {s:"HIPO", t:"Se ve hasta el farolillo de la escalera.."},
+  {s:"EL FORENSE", t:"El suicida, que estaba en la miseria, se hallaba en una habitación de techo abuhardillado y telarañoso. Parece que le estoy contemplando, tirado de bruces en un sillón...En la calle, llovía y relampagueaba. (relámpago)"},
+  {s:"TODOS", t:"AHHHH"},
+  {s:"FORENSE", t:"Me acerqué, y cuando ya estaba a su lado, entonces, ¡se apagó la luz!"},
+  {s:"HORTENSIA", t:"¡Oh!"},
+  {s:"DELFINA", t:"¿Se apagó la luz?"},
+  {s:"EL FORENSE", t:"Sí; se apagó la luz. Fueron unos segundos de angustia. Por fin, pude preguntar: \"¿Qué ocurre?\" Y el juez contestó: \"Perdone, es que me he apoyado sin querer en la llave de la luz, que estaba floja\". (Todos respiran)...."},
+  {s:"EL FORENSE", t:"Y ahora viene lo más horrendo, lo más espantoso... Encendimos la luz de nuevo, me rehíce y me acerqué otra vez al suicida. El juez se acercó también. Y ya iba yo a ponerle una mano encima..., cuando..., cuando se ¡levantó!"},
+  {s:"TODOS", t:"¡Oooh! (Sensación)."},
+  {s:"HORTENSIA", t:"¿El suicida?"},
+  {s:"DELFINA", t:"¿El suicida?"},
+  // Página 12 - (13 original)
+  {s:"ABELARDO", t:"¿El suicida se levantó?"},
+  {s:"EL FORENSE", t:"Sí; se levantó del sillón. Y se levantó diciendo lo que se dice siempre en esos casos; diciendo: \"¿Dónde estoy?\"."},
+  {s:"HORTENSIA", t:"¡Virgen Santa!"},
+  {s:"JUEZ", t:"Que no estaba muerto, claro..."},
+  {s:"ABELARDO", t:"¡Claro!"},
+  {s:"HIPO", t:"¿Fue un caso de catalepsia?"},
+  {s:"EL FORENSE", t:"Fue un caso de mala pata; porque cinco minutos después se moría de verdad y no he podido quitarme aquel mal trago. Desde entonces no puedo, es que no puedo..."},
+  {s:"JUEZ", t:"Señor Menéndez haga el favor de iniciar las diligencias."},
+  {s:"FORENSE", t:"Que no, que no."},
+  {s:"OLGA", t:"Yo podría recitar algo para que se calme."},
+  {s:"TODOS", t:"¡No!"},
+  {s:"FORENSE", t:"¿Es usted recitadora?"},
+  {s:"OLGA", t:"Olga Skerenovka Putchenko."},
+  {s:"TODOS", t:"¡No!"},
+  {s:"FORENSE", t:"(Agarrándola del brazo) Por lo que más quiera, recite usted, recite algo largo..."},
+  {s:"HIPO", t:"Yo no sé si es el momento."},
+  {s:"ABELARDO", t:"Desde luego que no es el momento..."},
+  {s:"ACOT", t:"(revuelo de todos y se APAGA LA LUZ)", acot:true},
+  {s:"TODOS", t:"Ahhhhhhhhh"},
+  {s:"ACOT", t:"(Revuelo de voces: \"¿Qué pasa?\", \"¡la luz!\", \"¡la luz!\")", acot:true},
+  {s:"FORENSE", t:"\"¡Como en Portaferrisa ¡Igual que en Portaferrisa\""},
+  {s:"ACOT", t:"(Vuelve la luz)", acot:true},
+  {s:"ABELARDO", t:"¿Qué ha pasado? ¿Quién ha apagado la luz? ¿Quién ha sido el imbécil?"},
+  {s:"JUEZ", t:"Cuidadito con lo que dice. He sido yo, sin querer he tocado la llave de la luz."},
+  {s:"FORENSE", t:"¡¡Igual, todo igual que en Portaferrisa!!"},
+  {s:"JUEZ", t:"Tengan la bondad de hacerme un relato del hecho y díganme quiénes lo presenciaron."},
+  {s:"ABELARDO", t:"En realidad el hecho no fue presenciado por nadie. Cuando ocurrió estábamos todos en el comedor, al fondo de ese pasillo. (Señala el foro)."},
+  {s:"EL FORENSE", t:"(Entre dientes) Como Portaferrisa, el apagón, la llave de la luz..."},
+  {s:"JUEZ", t:"Que alguien registre a la víctima y saque todo lo que lleve en los bolsillos."},
+  {s:"HIPO", t:"Yo puedo hacerlo. Soy médico, bueno casi, como si lo fuera."},
+  {s:"JUEZ", t:"(A Abelardo) Continúe usted."},
+  {s:"ABELARDO", t:"De pronto todos escuchamos unos tiros."},
+  {s:"EL JUEZ", t:"¿Cuántos tiros?"},
+  {s:"HORTENSIA", t:"Cinco."},
+  {s:"ABELARDO", t:"(Interviniendo) Fueron dos; dos tiros nada más, señor juez."},
+  {s:"HORTENSIA", t:"Cinco, Abelardo."},
+  {s:"ABELARDO", t:"Te digo que fueron dos."},
+  {s:"EL JUEZ", t:"¿En qué quedamos?"},
+  {s:"MANUELA", t:"Yo escuché seis tiros"},
+  // Página 13 - (14 original)
+  {s:"DELFINA", t:"Fueron cuatro en tandas de dos."},
+  {s:"OLGA", t:"Siete. Sonaron siete tiros.."},
+  {s:"JUEZ", t:"Menéndez, hágame el favor de reconocer a la víctima, que estos señores no se ponen de acuerdo"},
+  {s:"HIPO", t:"¡LA PISTOLA! ¡Ha aparecido la pistola!"},
+  {s:"HORTENSIA", t:"¡La pistola! ¡Uy, la pistola!"},
+  {s:"JUEZ", t:"Traiga usted aquí. Ahora sabremos cuántas balas se dispararon."},
+  {s:"TODOS", t:"A ver."},
+  {s:"JUEZ", t:"Examine."},
+  {s:"FORENSE", t:"En la pistola quedan dos balas."},
+  {s:"JUEZ", t:"Entonces está claro."},
+  {s:"FORENSE", t:"Considerando que en una pistola caben seis balas, podrían haberse disparado cuatro."},
+  {s:"JUEZ", t:"Muy bien. Traiga las cosas de los bolsillos de la víctima."},
+  {s:"HIPO", t:"Aquí tienen."},
+  {s:"JUEZ", t:"Veamos. Menéndez, apunte. Una pitillera de plata en cuya tapa hay grabada una inscripción: GARCIA"},
+  {s:"ABELARDO", t:"Se llamaba García..."},
+  {s:"HORTENSIA", t:"¡Yo no conozco a ningún García!"},
+  {s:"FORENSE", t:"Un apellido común."},
+  {s:"JUEZ", t:"Un pañuelo con la inicial G bordada a máquina."},
+  {s:"DELFINA", t:"Es de los baratos."},
+  {s:"JUEZ", t:"Un monedero de cuero conteniendo.... ochenta y cinco céntimos."},
+  {s:"DELFINA", t:"¡Pobre, era pobre!"},
+  {s:"MANUELA", t:"Igual se ha matado por falta de dinero."},
+  {s:"ABELARDO", t:"¿Y por qué lo ha hecho en la casa de mi novia?"},
+  {s:"HORTENSIA", t:"¡¡Y dale!!"},
+  {s:"JUEZ", t:"Calma, calma, lo sabremos. Tres palillos en mediano uso, un mechero automático, tres colillas de tabaco rubio, una funda con unas gafas a las que les falta un cristal."},
+  {s:"DELFINA", t:"Os dije que era pobre."},
+  {s:"JUEZ", t:"Un papelito con algo escrito. Lea (A Forense)"},
+  {s:"FORENSE", t:"\"QUE NO SE CULPE A NADIE DE MI MUERTE, SEÑOR JUEZ; ME MATO POR PROPIA VOLUNTAD, Y CON EL CORAZÓN DESTROZADO POR UN DESENGAÑO... LA MUJER QUE LO FUE TODO EN MI EXISTENCIA, VA A CASARSE CON OTRO; POR ESO ELIJO SU CASA PARA MATARME...\""},
+  {s:"ACOT", t:"(Sensación general).", acot:true},
+  {s:"ABELARDO", t:"(Desesperado) ¡Ah! ¿Lo ve usted, lo ve usted, señor juez?"},
+  {s:"HORTENSIA", t:"¡Dios mío!"},
+  {s:"DELFINA", t:"¡Virgen Santa!"},
+  {s:"HIPO", t:"¡Atiza!"},
+  {s:"MANUELA", t:"¡Vaya por Dios!"},
+  {s:"OLGA", t:"¡Infeliz!"},
+  // Página 14 - (15 original)
+  {s:"ABELARDO", t:"(Desesperadísimo). ¡Si ya me parecía a mí! ¡Si por algo dudaba yo! (A HORTENSIA) ¡Infame! ¡Haberme ocultado eso!"},
+  {s:"HORTENSIA", t:"¡Es mentira! ¡Te juro que es mentira! Pero ¿es que nadie me va a creer?"},
+  {s:"DELFINA", t:"La verdad es que yo pensaba que no te gustaban los hombres con bigote..."},
+  {s:"HORTENSIA", t:"¡¡A mi me va a dar algo, me va a dar algo!!"},
+  {s:"MANUELA", t:"Tranquila querida, vamos a sentarnos (Se la llevan al sillón de siempre)."},
+  {s:"JUEZ", t:"¡¡Calma por favor! Que alguien acompañe a la señora fuera de esta sala para que pueda tranquilizarse."},
+  {s:"DELFINA", t:"A mi es que me gustaría enterarme."},
+  {s:"MANUELA", t:"Claro, claro, a mí también"},
+  {s:"OLGA", t:"Yo la acompañaré."},
+  {s:"HORTENSIA", t:"Es que no entiendo nada... ¡Abelardo! Te juro que no entiendo nada..."},
+  {s:"OLGA", t:"Comenzaré recitando unos versos del poeta Bulgakov muy relajantes..."},
+  {s:"ACOT", t:"(Salen)", acot:true},
+  {s:"JUEZ", t:"Muy bien. Comencemos a recrear lo que ocurrió exactamente."},
+  {s:"ABELARDO", t:"Bien. Hortensia, Hipo y yo estábamos fuera. El salón estaba oscuro."},
+  {s:"JUEZ", t:"¿Quién encendió la luz?"},
+  {s:"HIPO", t:"Lo hizo la criada, señor juez."},
+  {s:"JUEZ", t:"¿Dónde está la criada?"},
+  {s:"ABELARDO", t:"Hortensia le ha dado la noche libre."},
+  {s:"JUEZ", t:"Pues estamos buenos..."},
+  {s:"HIPÓLITA", t:"Estaba muy asustada ¿sabe usted?"},
+  {s:"ABELARDO", t:"Al parecer tiene un problema de corazón y su novio no le deja que..."},
+  {s:"JUEZ", t:"Está bien. Que alguien apague la luz y vuelva a encenderla cuando corresponda. Debemos repetir todo exactamente como ocurrió."},
+  {s:"HIPO", t:"Yo lo haré. Ya está."},
+  {s:"JUEZ", t:"Perfecto. Estamos en el momento antes de entrar al salón."},
+  {s:"FORENSE", t:"Un momento, no me dejen solo.¿Dónde están todos? No se les ocurra dejarme solo. No me dejen solo al lado de...de..."},
+  {s:"JUEZ", t:"Agárrese a mi mano, por Dios."},
+  {s:"FORENSE", t:"Esto no me gusta, esto no me gusta nada."},
+  {s:"JUEZ", t:"Continuemos."},
+  {s:"HIPO", t:"Estábamos riendo en el comedor porque acabábamos de empezar a jugar una partida al Tute.."},
+  {s:"ABELARDO", t:"Al póker."},
+  {s:"HIPO", t:"Al tute"},
+  {s:"ABELARDO", t:"Te digo que jugábamos al póker."},
+  {s:"HIPO", t:"Y yo te digo que jugábamos a Tute"},
+  {s:"JUEZ", t:"¿No recuerdan a qué jugaban?"},
+  // Página 15 - (16 original)
+  {s:"ABELARDO", t:"Yo qué sé. Con la oscuridad es más difícil recordar."},
+  {s:"HIPO", t:"El caso es que cuando estábamos en mitad de la primera partida, escuchamos un disparo."},
+  {s:"ACOT", t:"(suena disparo)", acot:true},
+  {s:"TODOS", t:"AHHHH"},
+  {s:"JUEZ", t:"Qué ha sido eso,"},
+  {s:"ABELARDO", t:"¡Un disparo, ha sido un disparo!"},
+  {s:"FORENSE", t:"¡Portaferrisa! ¡Volvemos a estar en Portaferrisa! ¡Socorro!"},
+  {s:"HIPO", t:"¡El balcón, ha sido en el balcón!..."},
+  {s:"DELFINA", t:"¡Dios mío, Manuela, ponte a salvo!"},
+  {s:"MANUELA", t:"¡¡Están disparando por todas partes!!"},
+  {s:"JUEZ", t:"La luz, den la luz de una vez."},
+  {s:"ABELARDO", t:"Yo voy, yo voy... Ya está. (AQUÍ, OLGA YA ESTÁ COMO MUERTO)"},
+  {s:"MANUELA", t:"¿Están todos bien?"},
+  {s:"ABELARDO", t:"Un momento ¿dónde están Hipólita?"},
+  {s:"MANUELA", t:"¡Ay señor! ¡¡Han desaparecido!!"},
+  {s:"HIPO", t:"(Entrando desde el balcón) ¡Muchas gracias caballero! ¡Misterio solucionado! No ha habido ningún tiro. He podido hablar con el taxista que sigue reparando su coche ahí abajo. Me ha dicho que se le acaba de reventar la cámara de una de las ruedas del taxi."},
+  {s:"JUEZ", t:"Miren, yo no puedo más con este caso. Son las dos de la madrugada, quiero irme a mi casa. Menéndez, haga su trabajo de una maldita vez.."},
+  {s:"FORENSE", t:"Está bien, está bien."},
+  {s:"MANUELA", t:"Al fin. ¡Nosotras no nos vamos hasta saber de qué ha fallecido el señor Garcia."},
+  {s:"FORENSE", t:"Pues de qué va a ser? De cuatro disparos con esta pistola"},
+  {s:"HIPO", t:"Me temo que no"},
+  {s:"JUEZ", t:"¿Cómo dice?"},
+  {s:"HIPO", t:"Esta noche no ha habido ningún disparo en esta casa."},
+  {s:"ABELARDO", t:"¿Qué estás diciendo, Hipo?"},
+  {s:"HIPO", t:"Me lo ha asegurado el taxista. Lleva desde las once arreglando unas cámaras que tiene en malísimo estado y al hincharlas se le han reventado cuatro. Tres consecutivas a las once y media de la noche."},
+  {s:"ABELARDO", t:"¡Las detonaciones que se oyeron primero!"},
+  {s:"HIPO", t:"Exacto. Y hace un momento, una más. La que acabamos de oír."},
+  {s:"JUEZ", t:"¡¡Menéndez! ¡Inspeccione el cuerpo!"},
+  {s:"FORENSE", t:"Está bien, está bien. (Va acercándose muy despacio porque no quiere) Pero ¿por qué estoy yo aquí? ¿Por qué he venido? Por Dios, que no pase como en Portaferrisa, que no se levante. Esta vez no, por favor, esta vez no. Y si se levanta, lo mato con la pistola."},
+  // Página 16 - CUARTA ESCENA
+  {s:"ESCENA", t:"CUARTA ESCENA", scene:true},
+  {s:"ACOT", t:"Se acerca más. Y cuando ya va a tocarle, el SEÑOR GARCÍA, se incorpora.", acot:true},
+  {s:"TODOS", t:"¡¡Aaaaay!! (Gritos, alaridos, voces de espanto)."},
+  {s:"EL FORENSE", t:"¡Que se ha levantado! ¡¡Que se ha levantado!! (Todos gritan y se mueven muy asustados. Algunos se han quedado en shock, otros corren de un lado para otro..)"},
+  {s:"ACOT", t:"PAUSA", acot:true},
+  {s:"JUEZ", t:"¡¡QUIETOS!! ¡Quietos, que he conocido a muchos suicidas frustrados que se han vuelto locos!"},
+  {s:"DELFINA", t:"¡La virgen!"},
+  {s:"MANUELA", t:"¡Ay Señor bendito!"},
+  {s:"HORTENSIA", t:"(Entrando) ¿Qué son esos gritos? ¿Qué pasa? ¡Ay Dios! ¡El tuermo! ¡El duisida! Quiero decir, ¡El muerto! ¡El suicida!"},
+  {s:"JUEZ", t:"Pshhh, caballero..."},
+  // Página 17 - (continúa)
+  {s:"GARCIA", t:"¿Es a mí? ¿Quién llama?"},
+  {s:"JUEZ", t:"Soy yo. El juez."},
+  {s:"GARCÍA", t:"¿El juez? ¿Qué juez?"},
+  {s:"EL JUEZ", t:"El juez de guardia."},
+  {s:"GARCÍA", t:"¿De qué guardia?"},
+  {s:"EL JUEZ", t:"¡Pobre hombre! Loco del todo puede que no esté; pero ha quedado mal de la cabeza."},
+  {s:"HORTENSIA", t:"Yo a ese hombre no le he visto en mi vida."},
+  {s:"ABELARDO", t:"¡¡Caballero!! ¿Está usted vivo?"},
+  {s:"GARCÍA", t:"¿Vivo? Si; creo que sí..."},
+  {s:"EL JUEZ", t:"¿No le duele a usted nada?"},
+  {s:"GARCÍA", t:"No, no... Vamos... Me parece que no..."},
+  {s:"EL JUEZ", t:"¿Ni las heridas?"},
+  {s:"GARCÍA", t:"No, señor; tampoco me duelen las heridas."},
+  {s:"EL JUEZ", t:"¿Cuántas tiene usted?"},
+  {s:"GARCÍA", t:"Ninguna."},
+  {s:"EL JUEZ", t:"(Entrando y avanzando hacia GARCÍA) ¿Está usted seguro de no tener heridas, caballero?"},
+  {s:"GARCÍA", t:"(Tocándose el cuerpo) Yo no noto ninguna."},
+  {s:"JUEZ", t:"¡Menéndez!! ¿Dónde está el forense?"},
+  {s:"HORTENSIA", t:"Yo me lo he encontrado corriendo por el pasillo haciendo unos gestos muy raros y gritando Portaferrisa, Portaferrisa."},
+  {s:"JUEZ", t:"Que alguien lo traiga inmediatamente."},
+  {s:"HIPO", t:"Yo iré. (sale)"},
+  {s:"DELFINA", t:"¿Y la señora Olga?"},
+  {s:"HORTENSIA", t:"Olga se ha ido a su casa. Al parecer cuando ha sonado el disparo se le ha aparecido el espíritu de su padre diciendo \"aquí va a pasar algo muy gordo\". Y se ha ido corriendo."},
+  {s:"MANUELA", t:"Pobrecilla..."},
+  {s:"ABELARDO", t:"¿Se encuentra usted bien, caballero?"},
+  {s:"GARCÍA", t:"Si. Tenía un poco de mareillo en la cabeza, pero ya estoy mejor. Gracias."},
+  {s:"JUEZ", t:"Pero ¿qué le ha ocurrido a usted? porque ninguno sabemos cómo se ha suicidado."},
+  {s:"HORTENSIA", t:"Estamos todos que no vivimos..."},
+  {s:"DELFINA", t:"¡¡Y nos gustaría enterarnos!!..."},
+  {s:"MANUELA", t:"¡¡¿Cuántos tiros disparó usted?!!"},
+  {s:"ABELARDO", t:"Usted vino aquí a matarse por la dueña de este piso, ¿es así o no?"},
+  {s:"GARCÍA", t:"¿Podría hablarme desde ese otro lado? Es que creo que no tengo bien este oído."},
+  {s:"HORTENSIA", t:"Eso es por los disparos."},
+  {s:"HIPO", t:"(Entra con Forense que viene descompuesto, temblando y castañeando los dientes) Aquí lo traigo."},
+  {s:"FORENSE", t:"brrrrrrrrrrrr brrrrrrrrrrrr"},
+  // Página 18 - (19 original)
+  {s:"HIPO", t:"Vamos, vamos..."},
+  {s:"HORTENSIA", t:"¡Señor forense!...."},
+  {s:"JUEZ", t:"¡Pero, Menéndez!"},
+  {s:"EL FORENSE", t:"¡Brrrrrrr!... Partoferisa... Portafrisa...Frontaperrisa... Brrrrrrrrrrrr"},
+  {s:"HIPO", t:"No se le va la idea de la cabeza."},
+  {s:"GARCIA", t:"Ese hombre está fatal."},
+  {s:"JUEZ", t:"Que alguien le dé algo para beber."},
+  {s:"ABELARDO", t:"Usted (A García, me doy cuenta de que no oye y voy al otro lado del diván) Usted, haga el favor de contarnos cuándo y por qué ha entrado en esta casa y qué sucedió desde que llegó hasta que esos señores lo encontraron muerto en este diván, bueno, o casi."},
+  {s:"GARCÍA", t:"Caballero... No sé con qué derecho ni en nombre de qué me está usted exigiendo que hable..."},
+  {s:"ABELARDO", t:"(Maravillado e indignado) ¿Con qué derecho, en nombre de qué?..."},
+  {s:"EL JUEZ", t:"(A GARCÍA, señalando a ABELARDO) Es el prometido de la dueña de la casa..."},
+  {s:"GARCÍA", t:"(Levantándose electrizado) ¿Usted?... ¿Usted es el hombre que iba a...? ahora va usted a saberlo todo, miserable!"},
+  {s:"ABELARDO", t:"¿Miserable? (me voy hacia Hipo y Forense) ¿Miserable? ¡Lo mato!"},
+  {s:"EL FORENSE", t:"¡Uy, que lo mata!"},
+  {s:"HORTENSIA", t:"¡¡Abelardo!!"},
+  {s:"EL JUEZ", t:"¡Orden! ¡Silencio!"},
+  {s:"DELFINA", t:"Tranquila, querida, usted no se acerque. Manuela, ayúdame."},
+  {s:"MANUELA", t:"Vámonos antes de que vuelvan a disparar. (se la llevan para dentro)"},
+  {s:"GARCÍA", t:"(A ABELARDO, rechinando los dientes) ¡Yo no lo conocía a usted!... Sabía que ella iba a casarse, pero no lo conocía a usted. Por algo nunca quise pisar esta casa del pecado."},
+  {s:"ABELARDO", t:"¿Del pecado?"},
+  {s:"GARCÍA", t:"¡Pero sin conocerle le odiaba! ¡Me ha robado usted lo que más quería!..."},
+  {s:"ABELARDO", t:"¡Usted! ¡Usted es el que me la ha robado!"},
+  {s:"GARCÍA", t:"¿Yo?"},
+  {s:"EL FORENSE", t:"(Encarándose con GARCÍA). ¡Usted, sí! Eso de matarse y levantarse vivo después de muerto, asustando a la gente, ¡no es serio! ¡No, señor!"},
+  {s:"EL JUEZ", t:"Señores, no perdamos las formas."},
+  {s:"GARCÍA", t:"No es culpa mía no haberme muerto. Planeé el suicidio cuando descubrí en los periódicos que ella iba a casarse. Hacía dos años que no la veía, pero la herida de mi corazón continuaba abierta."},
+  {s:"EL FORENSE", t:"(Aparte) Es un cursi."},
+  {s:"GARCÍA", t:"El lunes pasado, decidí matarme en su propia casa. Averigüé el domicilio, y durante varias noches he paseado bajo estos balcones, esperando una ocasión. Y hoy la ocasión se presentó. Encontré abierto el balcón de esta salita... Subí, entré y llegué hasta aquí. Dentro se oían voces y risas... ¡Se divertían! Se divertían"},
+  // Página 19 - (20 original)
+  {s:"GARCIA", t:"mientras yo sufría! Entonces me acerqué la pistola a la sien y, antes de apretar el gatillo, sonaron tres tiros."},
+  {s:"FORENSE", t:"¿Tres tiros?"},
+  {s:"HIPO", t:"Los neumáticos; eso eran los neumáticos."},
+  {s:"GARCÍA", t:"La emoción pudo más que yo, y caí en ese diván desmayado..."},
+  {s:"ABELARDO", t:"¡Qué película!"},
+  {s:"JUEZ", t:"Entonces ¿usted tuvo relaciones con la dueña de la casa?"},
+  {s:"GARCIA", t:"¿Relaciones? ¡Si sólo hubieran sido relaciones! Y un hijo de seis años también tengo con ella."},
+  {s:"ABELARDO", t:"(Desesperado). ¡Un hijo!"},
+  {s:"HIPO", t:"¡Un hijo!...."},
+  {s:"FORENSE", t:"¡Un hijo!..."},
+  {s:"EL JUEZ", t:"¿Y ese niño existe?"},
+  {s:"GARCÍA", t:"¡Ya lo creo que existe! Se llama Emilianito y es una joya. Está interno en un colegio haciendo Primaria."},
+  {s:"ABELARDO", t:"(Deprimidísimo) ¡Basta! No quiero saber más... Basta..."},
+  {s:"HIPO", t:"Anda. Abelardo. Vámonos otra vez para Girona. Ya no te queda nada que hacer en esta casa. Hasta Hortensia se ha encerrado en su gabinete para no darte explicaciones..."},
+  {s:"ABELARDO", t:"Me voy a Girona... Me voy con mi prima... Hipo..., llévame a Girona..."},
+  {s:"HORTENSIA", t:"(Quitándoselas de encima) ¡Dejadme! Estoy decidida, necesito saber la verdad..."},
+  {s:"JUEZ", t:"¡Ella!"},
+  {s:"HIPO", t:"¡La adúltera!"},
+  {s:"FORENSE", t:"¡La mamá de Emilianito!"},
+  {s:"HORTENSIA", t:"Señor García, tiene usted que decir la verdad sea cual sea. Hágame el favor."},
+  {s:"GARCIA", t:"He dicho toda la verdad."},
+  {s:"ABELARDO", t:"Si, ha dicho toda la verdad con pelos y señales."},
+  {s:"EL FORENSE", t:"¡Basta de farsa! Usted se va a casar con el padre de su hijo (Señala a GARCÍA) porque lo mando yo, que soy el forense."},
+  {s:"HORTENSIA", t:"¿Yo? ¿Con el padre de mi hijo?"},
+  {s:"GARCIA", t:"¡Pero si esta señora no es la madre de mi hijo!"},
+  {s:"TODOS", t:"¿Qué? (Estupefacción)."},
+  {s:"EL JUEZ", t:"¿Cómo que no? ¡Ella es la dueña de la casa!"},
+  {s:"GARCÍA", t:"¿Ella? ¡No es posible! Pero... ¿Este no es el Ático segunda?"},
+  {s:"HORTENSIA", t:"No señor. Este es el Ático primera. En el Ático segunda vive la señorita Gertrudis."},
+  {s:"GARCIA", t:"¡Gertrudis González! ¡Ella es la ingrata!"},
+  {s:"EL FORENSE", t:"¿A qué se ha equivocado de balcón?"},
+  {s:"GARCÍA", t:"¡Dios mío! Eso debe de ser... Me he equivocado de balcón... Como están juntos..."},
+  // Página 20 - (21 original) - FINAL 2
+  {s:"DELFINA", t:"Pues la señorita Gertrudis está ahora mismo en su casa."},
+  {s:"MANUELA", t:"¿Así que tiene un hijo con este señor?"},
+  {s:"FORENSE", t:"Pues ya que estamos vamos a llamarla, para aclarar del todo la situación."},
+  {s:"JUEZ", t:"¿Es necesario?"},
+  {s:"FORENSE", t:"Claro que lo es"},
+  {s:"DELFINA", t:"Hombre, yo ahora ya quiero ver la historia hasta el final"},
+  {s:"MANUELA", t:"Ya te digo"},
+  {s:"FORENSE", t:"Vamos, Señor García, ¡vamos a llamarla ahora mismo!"},
+  {s:"GARCIA", t:"¡¡Ahhh!! ¡¡Ingrata, traicionera!!"},
+  {s:"JUEZ", t:"Esperen, pero hombre ¿dónde van todos ustedes? ¡Que yo quiero irme a mi casa!"},
+  {s:"ABELARDO", t:"(A HORTENSIA) ¡Ay, Hortensia! ¡No puedes imaginar lo feliz que esto me hace!"},
+  {s:"HORTENSIA", t:"Es increíble, Abelardo. Hace apenas una hora pensaba casarme contigo."},
+  {s:"ABELARDO", t:"Pero amorcito... Podrás perdonarme, ¿verdad?"},
+  {s:"HORTENSIA", t:"Quieres que te diga la verdad? Ni loca."},
+  {s:"ABELARDO", t:"A ver... reconozco que he desconfiado un pelín..."},
+  {s:"HORTENSIA", t:"No quiero un celoso como marido."},
+  {s:"ABELARDO", t:"No sabes lo que dices, chiquitina..."},
+  {s:"HORTENSIA", t:"(Coge la pistola y le apunta) Sal de mi casa"},
+  {s:"ABELARDO", t:"Hortensia, pero... (saliendo) Hortensia, ¿te has vuelto loca?... ¡¡HORTENSIA!! (Hortensia sale tras él, apuntando)"},
+  {s:"ACOT", t:"(Suenan tiros y entra rodando una rueda). OSCURO", acot:true},
+];
+
+// Speech synthesis
+let synth = window.speechSynthesis;
+
+// Voice selection
+let selectedVoice = null;
+
+function loadVoices() {
+  const voices = synth.getVoices();
+  const esVoices = voices.filter(v => v.lang.startsWith('es'));
+  const preferred = [
+    ...esVoices.filter(v => v.lang === 'es-ES'),
+    ...esVoices.filter(v => v.lang !== 'es-ES'),
+  ];
+  if (preferred.length === 0) {
+    document.getElementById('voiceSelect').innerHTML = '<option value="">Sin voces en español</option>';
+    return;
+  }
+  const sel = document.getElementById('voiceSelect');
+  sel.innerHTML = preferred.map((v, i) =>
+    `<option value="${i}">${v.name} (${v.lang})</option>`
+  ).join('');
+  const monicaIdx = preferred.findIndex(v => v.name === 'Mónica');
+  sel.selectedIndex = monicaIdx >= 0 ? monicaIdx : 0;
+  selectedVoice = preferred[sel.selectedIndex];
+  sel.addEventListener('change', function() {
+    selectedVoice = preferred[parseInt(this.value)] || null;
+  });
+}
+
+if (synth.onvoiceschanged !== undefined) {
+  synth.onvoiceschanged = loadVoices;
+}
+setTimeout(loadVoices, 300);
+
+// State
+let currentIdx = 0;
+let isPaused = false;
+let pauseSecs = 8;
+let speechRate = 1;
+let countdownTimer = null;
+let countdownRemaining = 0;
+let isRunning = false;
+
+// Setup controls
+document.getElementById('pauseSecs').addEventListener('input', function() {
+  pauseSecs = parseInt(this.value);
+  document.getElementById('pauseLabel').textContent = this.value + 's';
+});
+
+document.getElementById('startFrom').addEventListener('change', function() {
+  const val = this.value;
+  if (val === '0') currentIdx = 0;
+  else if (val === 'escena1') currentIdx = SCRIPT.findIndex(l => l.scene && l.t.includes('PRIMERA'));
+  else if (val === 'escena2') currentIdx = SCRIPT.findIndex(l => l.scene && l.t.includes('SEGUNDA'));
+  else if (val === 'escena3') currentIdx = SCRIPT.findIndex(l => l.scene && l.t.includes('TERCERA'));
+  else if (val === 'escena4') currentIdx = SCRIPT.findIndex(l => l.scene && l.t.includes('CUARTA'));
+  if (currentIdx < 0) currentIdx = 0;
+});
+
+function startSession() {
+  const actorVal = document.getElementById('actorSelect').value;
+  if (!actorVal) { alert('Por favor selecciona tu nombre.'); return; }
+  myChars = ACTOR_CHARS[actorVal] || [];
+  const actorLabel = document.getElementById('actorSelect').selectedOptions[0].text;
+  document.getElementById('subtitle').textContent = 'Apuntador Mañanettis · ' + actorLabel;
+  pauseSecs = parseInt(document.getElementById('pauseSecs').value);
+  speechRate = parseFloat(document.getElementById('rateSelect').value);
+  const startVal = document.getElementById('startFrom').value;
+  if (startVal === '0') currentIdx = 0;
+  else if (startVal === 'escena1') currentIdx = Math.max(0, SCRIPT.findIndex(l => l.scene && l.t.includes('PRIMERA')));
+  else if (startVal === 'escena2') currentIdx = Math.max(0, SCRIPT.findIndex(l => l.scene && l.t.includes('SEGUNDA')));
+  else if (startVal === 'escena3') currentIdx = Math.max(0, SCRIPT.findIndex(l => l.scene && l.t.includes('TERCERA')));
+  else if (startVal === 'escena4') currentIdx = Math.max(0, SCRIPT.findIndex(l => l.scene && l.t.includes('CUARTA')));
+
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('player').style.display = 'flex';
+  renderScriptList();
+  playFromCurrent();
+}
+
+const ACTOR_CHARS = {
+  "ABELARDO": ["ABELARDO"],
+  "ENCARNA": ["HORTENSIA"],
+  "YUREMA": ["HIPO", "HIPÓLITA", "HIPOLITA"],
+  "AURI": ["RAMONA", "FORENSE", "EL FORENSE"],
+  "LAURA": ["PETRA", "JUEZ", "EL JUEZ"],
+  "YVONNE": ["OLGA", "GARCIA", "GARCÍA"],
+  "ESTEFANIA": ["DELFINA"],
+  "LOREA": ["MANUELA"]
+};
+let myChars = ["ABELARDO"];
+function isMyLine(line) { return myChars.includes(line.s.toUpperCase()); }
+function isSkippable(line) { return line.scene || line.acot; }
+
+function renderScriptList() {
+  const el = document.getElementById('scriptList');
+  el.innerHTML = SCRIPT.map((l, i) => {
+    if (l.scene) return `<div class="sl-item" id="sl${i}" onclick="jumpTo(${i})" style="color:var(--text-muted);font-style:italic">— ${l.t} —</div>`;
+    if (l.acot) return `<div class="sl-item" id="sl${i}" onclick="jumpTo(${i})" style="color:var(--text-muted);font-size:11px;font-style:italic">${l.t.substring(0,60)}${l.t.length>60?'…':''}</div>`;
+    const mine = isMyLine(l);
+    return `<div class="sl-item${mine?' is-mine':''}" id="sl${i}" onclick="jumpTo(${i})"><span class="sl-speaker">${l.s}</span>${l.t.substring(0,55)}${l.t.length>55?'…':''}</div>`;
+  }).join('');
+}
+
+function updateDisplay() {
+  if (currentIdx >= SCRIPT.length) {
+    document.getElementById('mainDisplay').innerHTML = `<div class="finished-screen"><h2>¡Ensayo completado!</h2><p>Has repasado todo el guion de Abelardo.</p></div>`;
+    document.getElementById('statusZone').innerHTML = '';
+    setStatus('');
+    return;
+  }
+  const l = SCRIPT[currentIdx];
+  const mine = isMyLine(l);
+  const total = SCRIPT.length;
+
+  document.getElementById('progressFill').style.width = ((currentIdx+1)/total*100).toFixed(1)+'%';
+  document.getElementById('lineCount').textContent = `${currentIdx+1} / ${total}`;
+
+  const card = document.getElementById('lineCard');
+  const sp = document.getElementById('speakerName');
+  const tx = document.getElementById('lineText');
+
+  if (l.scene) {
+    card.className = 'line-card';
+    sp.className = 'speaker-name other';
+    sp.textContent = '';
+    tx.innerHTML = `<span style="font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);font-style:italic">${l.t}</span>`;
+  } else if (l.acot) {
+    card.className = 'line-card';
+    sp.className = 'speaker-name other';
+    sp.textContent = 'Acotación';
+    tx.innerHTML = `<span class="stage-dir">${l.t}</span>`;
+  } else {
+    card.className = 'line-card' + (mine ? ' is-mine' : '');
+    sp.className = 'speaker-name ' + (mine ? 'mine' : 'other');
+    sp.textContent = l.s;
+    tx.textContent = l.t;
+  }
+
+  // Update list
+  document.querySelectorAll('[id^=sl]').forEach((el, i) => {
+    el.classList.toggle('active', i === currentIdx);
+    if (i === currentIdx) el.scrollIntoView({block:'nearest', behavior:'smooth'});
+  });
+}
+
+function setStatus(type, extra) {
+  const z = document.getElementById('statusZone');
+  if (!type) { z.innerHTML = ''; return; }
+  if (type === 'reading') {
+    z.innerHTML = `<div class="status-pill reading"><span class="dot"></span> Leyendo...</div>`;
+  } else if (type === 'myturn') {
+    const pct = Math.round((extra / pauseSecs) * 100);
+    z.innerHTML = `<div class="status-pill your-turn">🎭 Tu turno — di tu línea — ${extra}s</div><div class="countdown-bar"><div class="countdown-fill" id="cdf" style="width:${pct}%"></div></div>`;
+  } else if (type === 'paused') {
+    z.innerHTML = `<div class="status-pill paused">⏸ Pausado</div>`;
+  }
+}
+
+function playFromCurrent() {
+  if (currentIdx >= SCRIPT.length) { updateDisplay(); return; }
+  isRunning = true;
+  isPaused = false;
+  document.getElementById('playBtn').textContent = '⏸ Pausar';
+  updateDisplay();
+
+  const l = SCRIPT[currentIdx];
+  if (l.scene || l.acot) {
+    // Show briefly then move on
+    setTimeout(() => { if (!isPaused && isRunning) { currentIdx++; playFromCurrent(); } }, 800);
+    return;
+  }
+  if (isMyLine(l)) {
+    startMyLinePause();
+  } else {
+    speakLine(l.t, () => { if (!isPaused && isRunning) { currentIdx++; playFromCurrent(); } });
+  }
+}
+
+function startMyLinePause() {
+  countdownRemaining = pauseSecs;
+  setStatus('myturn', countdownRemaining);
+  clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    countdownRemaining--;
+    const el = document.getElementById('cdf');
+    if (el) el.style.width = Math.round((countdownRemaining/pauseSecs)*100)+'%';
+    setStatus('myturn', countdownRemaining);
+    if (countdownRemaining <= 0) {
+      clearInterval(countdownTimer);
+      setStatus('');
+      if (!isPaused && isRunning) { currentIdx++; playFromCurrent(); }
+    }
+  }, 1000);
+}
+
+function stripParens(text) {
+  return text.replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function speakLine(text, onEnd) {
+  synth.cancel();
+  setStatus('reading');
+  setTimeout(() => {
+    const utt = new SpeechSynthesisUtterance(stripParens(text));
+    const voiceName = document.getElementById('voiceSelect').selectedOptions[0]?.text;
+    const freshVoice = synth.getVoices().find(v => v.name === voiceName?.split(' (')[0]);
+    if (freshVoice) { utt.voice = freshVoice; utt.lang = freshVoice.lang; }
+    else if (selectedVoice) { utt.voice = selectedVoice; utt.lang = selectedVoice.lang; }
+    else { utt.lang = 'es-ES'; }
+    utt.rate = speechRate;
+    utt.onend = () => { setStatus(''); onEnd(); };
+    utt.onerror = () => { setStatus(''); onEnd(); };
+    synth.speak(utt);
+  }, 150);
+}
+
+function stopAll() {
+  clearInterval(countdownTimer);
+  synth.cancel();
+  setStatus('');
+  isRunning = false;
+}
+
+function togglePlay() {
+  if (isPaused) {
+    isPaused = false;
+    document.getElementById('playBtn').textContent = '⏸ Pausar';
+    playFromCurrent();
+  } else {
+    isPaused = true;
+    clearInterval(countdownTimer);
+    synth.pause();
+    isRunning = false;
+    document.getElementById('playBtn').textContent = '▶ Continuar';
+    setStatus('paused');
+  }
+}
+
+function nextLine() {
+  stopAll();
+  currentIdx = Math.min(currentIdx+1, SCRIPT.length-1);
+  while (currentIdx < SCRIPT.length-1 && (SCRIPT[currentIdx].scene || SCRIPT[currentIdx].acot)) currentIdx++;
+  playFromCurrent();
+}
+function prevLine() {
+  stopAll();
+  currentIdx = Math.max(currentIdx-1, 0);
+  while (currentIdx > 0 && (SCRIPT[currentIdx].scene || SCRIPT[currentIdx].acot)) currentIdx--;
+  playFromCurrent();
+}
+function repeatLine() { stopAll(); playFromCurrent(); }
+function jumpTo(i) { stopAll(); currentIdx = i; playFromCurrent(); }
+function goSetup() {
+  stopAll();
+  document.getElementById('player').style.display = 'none';
+  document.getElementById('setup').style.display = 'flex';
+}
+</script>
+</body>
+</html>
