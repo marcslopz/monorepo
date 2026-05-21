@@ -1275,6 +1275,7 @@ let countdownTimer = null;
 let countdownRemaining = 0;
 let lineRevealed = false;
 let audioCtx = null;
+let utteranceGen = 0;
 let isRunning = false;
 
 // Setup controls
@@ -1461,7 +1462,9 @@ function stripParens(text) {
 function speakLine(text, onEnd) {
   synth.cancel();
   setStatus('reading');
+  const myGen = utteranceGen;
   setTimeout(() => {
+    if (utteranceGen !== myGen) return;
     const utt = new SpeechSynthesisUtterance(stripParens(text));
     const voiceName = document.getElementById('voiceSelect').selectedOptions[0]?.text;
     const freshVoice = synth.getVoices().find(v => v.name === voiceName?.split(' (')[0]);
@@ -1469,13 +1472,14 @@ function speakLine(text, onEnd) {
     else if (selectedVoice) { utt.voice = selectedVoice; utt.lang = selectedVoice.lang; }
     else { utt.lang = 'es-ES'; }
     utt.rate = speechRate;
-    utt.onend = () => { setStatus(''); onEnd(); };
-    utt.onerror = () => { setStatus(''); onEnd(); };
+    utt.onend = () => { if (utteranceGen === myGen) { setStatus(''); onEnd(); } };
+    utt.onerror = () => { if (utteranceGen === myGen) { setStatus(''); onEnd(); } };
     synth.speak(utt);
   }, 150);
 }
 
 function stopAll() {
+  utteranceGen++;
   clearInterval(countdownTimer);
   synth.cancel();
   setStatus('');
