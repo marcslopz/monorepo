@@ -58,6 +58,9 @@ almacenan en las tablas de auth de `demo`, pero los JWTs son válidos para cualq
 | demo     | `demo`    | ✅ created |
 | mariland | `mariland`| ✅ created |
 | abacus   | `abacus`  | ✅ created |
+| flixseven| `flixseven` (own Neon project `flixseven`) | pending |
+
+> **FlixSeven** usa psycopg (síncrono): `postgresql+psycopg://…?sslmode=require`, sin convertir a asyncpg.
 
 ---
 
@@ -107,6 +110,27 @@ One **Web Service** per backend app. Config: Docker, Frankfurt, free plan.
 | `ABACUS_JWKS_URL` | `<neon-auth-base-url>/.well-known/jwks.json` |
 | `ABACUS_JWT_AUDIENCE` | verificar del primer JWT real en jwt.io (puede estar vacío si Neon no incluye `aud`) |
 
+**flixseven** (en el gateway, montada en `/flixseven`)
+| Var | Value |
+|-----|-------|
+| `FLIXSEVEN_DATABASE_URL` | Neon connection string (`postgresql+psycopg://…?sslmode=require`) |
+| `FLIXSEVEN_TOKEN_SECRET` | random secret (firma los tokens de los móviles) |
+| `FLIXSEVEN_ADMIN_PASSWORD_HASH` | `python -m flixseven.adapters.admin_password` en el repo de FlixSeven |
+| `FLIXSEVEN_TMDB_TOKEN` | token de lectura de la API de TMDB |
+| `FLIXSEVEN_GITHUB_TOKEN` | token de solo lectura de Actions en `marcslopz/flixseven` (lista los APKs) |
+
+Opcionales, para buscar avatares: `FLIXSEVEN_COMIC_VINE_API_KEY`, `FLIXSEVEN_IGDB_CLIENT_ID` y
+`FLIXSEVEN_IGDB_CLIENT_SECRET`.
+
+Sin `FLIXSEVEN_VALKEY_URL`: los eventos en vivo van en memoria (por eso `--workers 1`).
+
+**Secret file** `GIT_AUTH_TOKEN` (Render → gateway → Environment → Secret Files): fine-grained PAT de GitHub con
+*Contents: read-only* solo sobre `marcslopz/flixseven`. Render lo pasa como build secret al `ADD` del
+Dockerfile. Caduca: al renovarlo en GitHub, sustituir el secret file y redesplegar.
+
+**Deploy hook**: Render → gateway → Settings → Deploy Hook. Su URL va como secret `RENDER_DEPLOY_HOOK_URL`
+en el repo de FlixSeven, cuyo CI la llama tras cada merge a `main`.
+
 > **Nota abacus**: el gateway monta abacus en `/abacus`. El schema de PostgreSQL (`abacus`) lo crea Alembic automáticamente en el primer deploy via `CREATE SCHEMA IF NOT EXISTS abacus` en `alembic/env.py`.
 
 ### Apps
@@ -115,6 +139,7 @@ One **Web Service** per backend app. Config: Docker, Frankfurt, free plan.
 | demo     | https://demo-backend-5b1n.onrender.com | ✅ live |
 | mariland | https://mariland-backend.onrender.com  | ✅ live |
 | abacus   | https://gateway-8ij4.onrender.com/abacus | ✅ live (via gateway) |
+| flixseven| https://gateway-8ij4.onrender.com/flixseven | pending (via gateway) |
 
 > **Note**: Render free tier pauses on inactivity (~30s cold start on first request).
 
