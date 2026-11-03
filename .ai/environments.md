@@ -38,17 +38,19 @@
 - Production Docker CMD chains `alembic upgrade head && uvicorn ...`
 
 **FlixSeven en el gateway** (código en el repo privado `marcslopz/flixseven`, no en este):
-- El Dockerfile del gateway hace `ADD https://github.com/marcslopz/flixseven.git#main` con el build secret
-  `GIT_AUTH_TOKEN` (BuildKit): siempre el último `main` de FlixSeven. Su CI llama al deploy hook de Render
-  tras cada merge a `main`.
+- El Dockerfile del gateway descarga FlixSeven en un `RUN` con el build secret `GIT_AUTH_TOKEN` montado
+  (Render solo pasa los secret files a `RUN`, no a `ADD`), en la versión `FLIXSEVEN_REF` (por defecto `main`).
+  Tras cada merge a `main`, el CI de FlixSeven pone `FLIXSEVEN_REF=<commit>` en el gateway con la API de
+  Render y lanza el despliegue: Render pasa sus env vars al build como build args, y el commit nuevo invalida
+  la caché de ese paso.
 - El gateway corre con `--workers 1`: FlixSeven reparte sus eventos en vivo (SSE) en memoria, dentro de un
   proceso. Con más workers, un móvil no vería los votos de otro.
 - Sus migraciones van en el CMD: `python -m flixseven.migrate` (no usa `alembic.ini`).
 - FlixSeven trae Python 3.13 y versiones más nuevas de fastapi/sqlalchemy/alembic que el `uv.lock` del
   monorepo: en la imagen del gateway, demo/mariland/abacus corren con ellas sin que sus tests lo cubran
   (decisión consciente: mariland y abacus probablemente se descontinúen).
-- Build local: Podman no soporta `ADD` de git con secret; usar BuildKit (`moby/buildkit`) con
-  `--secret id=GIT_AUTH_TOKEN,src=<token file>`.
+- Build local, igual que en Render: BuildKit (`moby/buildkit`, se puede lanzar dentro de Podman)
+  con `--secret id=GIT_AUTH_TOKEN,src=<token file>` y, opcional, `--opt build-arg:FLIXSEVEN_REF=<commit>`.
 
 ## CI (GitHub Actions)
 - `.github/workflows/ci-<app>.yml` per app
