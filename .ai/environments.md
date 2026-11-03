@@ -20,11 +20,13 @@
 | demo     | Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
 | mariland | Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
 | abacus   | Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
+| flixseven| Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
 
-**Nota**: Los tres backends (demo, mariland, abacus) están unificados en un único servicio Render `gateway`.
+**Nota**: Los backends (demo, mariland, abacus y flixseven) están unificados en un único servicio Render `gateway`.
 - demo backend: `https://gateway-8ij4.onrender.com/demo/api/v1/*`
 - mariland backend: `https://gateway-8ij4.onrender.com/mariland/api/*`
 - abacus backend: `https://gateway-8ij4.onrender.com/abacus/api/*`
+- flixseven backend: `https://gateway-8ij4.onrender.com/flixseven/*` (health: `/flixseven/health`)
 - Dockerfile del gateway: `backend/gateway/Dockerfile` (build context: raíz del repo)
 - Frontends: `VITE_API_BASE_URL=https://gateway-8ij4.onrender.com/demo`, `VITE_MARILAND_API_BASE_URL=https://gateway-8ij4.onrender.com/mariland`, `VITE_ABACUS_API_BASE_URL=https://gateway-8ij4.onrender.com/abacus`
 
@@ -34,6 +36,19 @@
 - Render free tier pauses on inactivity (~30s cold start)
 - Neon connection string uses `sslmode=require` — converted to asyncpg `connect_args={"ssl": True}` in `database.py`
 - Production Docker CMD chains `alembic upgrade head && uvicorn ...`
+
+**FlixSeven en el gateway** (código en el repo privado `marcslopz/flixseven`, no en este):
+- El Dockerfile del gateway hace `ADD https://github.com/marcslopz/flixseven.git#main` con el build secret
+  `GIT_AUTH_TOKEN` (BuildKit): siempre el último `main` de FlixSeven. Su CI llama al deploy hook de Render
+  tras cada merge a `main`.
+- El gateway corre con `--workers 1`: FlixSeven reparte sus eventos en vivo (SSE) en memoria, dentro de un
+  proceso. Con más workers, un móvil no vería los votos de otro.
+- Sus migraciones van en el CMD: `python -m flixseven.migrate` (no usa `alembic.ini`).
+- FlixSeven trae Python 3.13 y versiones más nuevas de fastapi/sqlalchemy/alembic que el `uv.lock` del
+  monorepo: en la imagen del gateway, demo/mariland/abacus corren con ellas sin que sus tests lo cubran
+  (decisión consciente: mariland y abacus probablemente se descontinúen).
+- Build local: Podman no soporta `ADD` de git con secret; usar BuildKit (`moby/buildkit`) con
+  `--secret id=GIT_AUTH_TOKEN,src=<token file>`.
 
 ## CI (GitHub Actions)
 - `.github/workflows/ci-<app>.yml` per app

@@ -1,6 +1,7 @@
+# syntax=docker/dockerfile:1
 # Build context: repo root (monorepo/)
-# docker build -f backend/gateway/Dockerfile .
-FROM python:3.12-slim AS base
+# docker build -f backend/gateway/Dockerfile --secret id=GIT_AUTH_TOKEN,src=<token file> .
+FROM python:3.13-slim AS base
 
 WORKDIR /app
 
@@ -34,13 +35,21 @@ COPY backend/abacus/alembic ./backend/abacus/alembic
 COPY backend/abacus/alembic.ini ./backend/abacus/alembic.ini
 COPY backend/gateway/src ./backend/gateway/src
 
+# FlixSeven lives in its own private repo (marcslopz/flixseven): the latest main, fetched with
+# the GIT_AUTH_TOKEN build secret (Render: a secret file of that name, a read-only token).
+# ADD re-fetches only when main moves to another commit.
+ADD https://github.com/marcslopz/flixseven.git#main /src/flixseven
+RUN uv pip install --python /opt/venv /src/flixseven/backend
+
 ENV PATH="/opt/venv/bin:$PATH"
 ENV PYTHONPATH="/app/backend/demo/src:/app/backend/mariland/src:/app/backend/abacus/src:/app/backend/gateway/src"
 
 EXPOSE 8000
 
+# One worker: FlixSeven hands its live events to the phones in memory, within one process.
 CMD ["sh", "-c", \
     "cd /app/backend/demo && alembic upgrade head && \
      cd /app/backend/mariland && alembic upgrade head && \
      cd /app/backend/abacus && alembic upgrade head && \
-     uvicorn gateway.main:app --host 0.0.0.0 --port 8000 --workers 4"]
+     python -m flixseven.migrate && \
+     uvicorn gateway.main:app --host 0.0.0.0 --port 8000 --workers 1"]
