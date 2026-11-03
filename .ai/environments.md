@@ -49,7 +49,7 @@
 - FlixSeven trae Python 3.13 y versiones más nuevas de fastapi/sqlalchemy/alembic que el `uv.lock` del
   monorepo: en la imagen del gateway, demo/mariland/abacus corren con ellas sin que sus tests lo cubran
   (decisión consciente: mariland y abacus probablemente se descontinúen).
-- Build local: Podman no soporta `RUN --mount=type=secret` igual que Render; usar BuildKit (`moby/buildkit`)
+- Build local, igual que en Render: BuildKit (`moby/buildkit`, se puede lanzar dentro de Podman)
   con `--secret id=GIT_AUTH_TOKEN,src=<token file>` y, opcional, `--opt build-arg:FLIXSEVEN_REF=<commit>`.
 
 ## CI (GitHub Actions)
