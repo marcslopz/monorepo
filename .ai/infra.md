@@ -125,11 +125,13 @@ Opcionales, para buscar avatares: `FLIXSEVEN_COMIC_VINE_API_KEY`, `FLIXSEVEN_IGD
 Sin `FLIXSEVEN_VALKEY_URL`: los eventos en vivo van en memoria (por eso `--workers 1`).
 
 **Secret file** `GIT_AUTH_TOKEN` (Render → gateway → Environment → Secret Files): fine-grained PAT de GitHub con
-*Contents: read-only* solo sobre `marcslopz/flixseven`. Render lo pasa como build secret al `ADD` del
-Dockerfile. Caduca: al renovarlo en GitHub, sustituir el secret file y redesplegar.
+*Contents: read-only* solo sobre `marcslopz/flixseven`. Render lo monta en el `RUN` del Dockerfile que
+descarga FlixSeven. Caduca: al renovarlo en GitHub, sustituir el secret file y redesplegar.
 
-**Deploy hook**: Render → gateway → Settings → Deploy Hook. Su URL va como secret `RENDER_DEPLOY_HOOK_URL`
-en el repo de FlixSeven, cuyo CI la llama tras cada merge a `main`.
+**`FLIXSEVEN_REF`** (env var del gateway): el commit de FlixSeven que instala el build. No se toca a mano:
+tras cada merge a `main`, el CI de FlixSeven la actualiza con la API de Render y lanza el despliegue, con el
+secret `RENDER_API_KEY` del repo de FlixSeven (Render no limita sus API keys: maneja toda la cuenta).
+Sin ella, el build instala `main`.
 
 > **Nota abacus**: el gateway monta abacus en `/abacus`. El schema de PostgreSQL (`abacus`) lo crea Alembic automáticamente en el primer deploy via `CREATE SCHEMA IF NOT EXISTS abacus` en `alembic/env.py`.
 

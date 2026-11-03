@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Build context: repo root (monorepo/)
-# docker build -f backend/gateway/Dockerfile --secret id=GIT_AUTH_TOKEN,src=<token file> .
+# docker build -f backend/gateway/Dockerfile --secret id=GIT_AUTH_TOKEN,src=<token file> [--build-arg FLIXSEVEN_REF=<commit>] .
 FROM python:3.13-slim AS base
 
 WORKDIR /app
@@ -35,10 +35,29 @@ COPY backend/abacus/alembic ./backend/abacus/alembic
 COPY backend/abacus/alembic.ini ./backend/abacus/alembic.ini
 COPY backend/gateway/src ./backend/gateway/src
 
-# FlixSeven lives in its own private repo (marcslopz/flixseven): the latest main, fetched with
-# the GIT_AUTH_TOKEN build secret (Render: a secret file of that name, a read-only token).
-# ADD re-fetches only when main moves to another commit.
-ADD https://github.com/marcslopz/flixseven.git#main /src/flixseven
+# FlixSeven lives in its own private repo (marcslopz/flixseven), fetched with the GIT_AUTH_TOKEN
+# build secret (Render: a secret file of that name, a read-only token). Render only hands secret
+# files to RUN, not to ADD. FLIXSEVEN_REF is a Render env var that FlixSeven's CI sets to the merged
+# commit, so a new commit is fetched again instead of reusing this step from the build cache.
+ARG FLIXSEVEN_REF=main
+RUN --mount=type=secret,id=GIT_AUTH_TOKEN,dst=/etc/secrets/GIT_AUTH_TOKEN python3 - <<'PY'
+import io
+import os
+import tarfile
+import urllib.request
+from pathlib import Path
+
+token = Path("/etc/secrets/GIT_AUTH_TOKEN").read_text().strip()
+request = urllib.request.Request(
+    f"https://api.github.com/repos/marcslopz/flixseven/tarball/{os.environ['FLIXSEVEN_REF']}",
+    headers={"Authorization": f"Bearer {token}"},
+)
+with urllib.request.urlopen(request) as response:
+    archive = tarfile.open(fileobj=io.BytesIO(response.read()))
+top = archive.getnames()[0].split("/")[0]  # marcslopz-flixseven-<commit>
+archive.extractall("/src", filter="data")
+Path("/src", top).rename("/src/flixseven")
+PY
 RUN uv pip install --python /opt/venv /src/flixseven/backend
 
 ENV PATH="/opt/venv/bin:$PATH"
