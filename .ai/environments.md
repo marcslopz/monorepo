@@ -20,7 +20,7 @@
 | demo     | Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
 | mariland | Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
 | abacus   | Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
-| flixseven| Database   | Neon (PostgreSQL) | own project `flixseven`                  |
+| flixseven| Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
 
 **Nota**: Los backends (demo, mariland, abacus y flixseven) están unificados en un único servicio Render `gateway`.
 - demo backend: `https://gateway-8ij4.onrender.com/demo/api/v1/*`

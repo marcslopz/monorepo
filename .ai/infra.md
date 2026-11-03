@@ -58,7 +58,7 @@ almacenan en las tablas de auth de `demo`, pero los JWTs son válidos para cualq
 | demo     | `demo`    | ✅ created |
 | mariland | `mariland`| ✅ created |
 | abacus   | `abacus`  | ✅ created |
-| flixseven| `flixseven` (own Neon project `flixseven`) | pending |
+| flixseven| `flixseven`| pending   |
 
 > **FlixSeven** usa psycopg (síncrono): `postgresql+psycopg://…?sslmode=require`, sin convertir a asyncpg.
 
