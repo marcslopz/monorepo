@@ -130,3 +130,46 @@ export function selectionLabel(actor, characters) {
   const names = characters.map(titleCase).join(" / ");
   return actor ? `${actor} (${names})` : names;
 }
+
+// Corrections overlay. A patch is { id, op, lineId, afterId?, speaker?, text?, createdAt, undone? }
+// with op = edit | delete | reassign | insert. Patches apply in createdAt order; undone ones, unknown
+// ops and patches to lines that don't exist (any more) are ignored. The base lines are not modified:
+// touched lines come back as copies with `patches: [patchId…]` (and `inserted: true` if new).
+export function applyPatches(lines, patches) {
+  const result = lines.map((l) => ({ ...l }));
+  const indexOf = (id) => result.findIndex((l) => l.id === id);
+  const mark = (line, p) => (line.patches = [...(line.patches ?? []), p.id]);
+  const ordered = patches
+    .filter((p) => !p.undone)
+    .map((p, i) => ({ p, i }))
+    .sort((a, b) => (a.p.createdAt ?? "").localeCompare(b.p.createdAt ?? "") || a.i - b.i)
+    .map(({ p }) => p);
+
+  for (const p of ordered) {
+    if (p.op === "insert") {
+      if (!p.lineId || indexOf(p.lineId) >= 0) continue;
+      const at = p.afterId == null ? 0 : indexOf(p.afterId) + 1;
+      if (at === 0 && p.afterId != null) continue;
+      const line = p.speaker ? { id: p.lineId, s: p.speaker, t: p.text ?? "" } : { id: p.lineId, t: p.text ?? "", acot: true };
+      line.inserted = true;
+      mark(line, p);
+      result.splice(at, 0, line);
+      continue;
+    }
+    const i = indexOf(p.lineId);
+    if (i < 0) continue;
+    const line = result[i];
+    if (p.op === "delete") {
+      result.splice(i, 1);
+    } else if (p.op === "edit" && typeof p.text === "string") {
+      line.t = p.text;
+      mark(line, p);
+    } else if (p.op === "reassign" && p.speaker) {
+      line.s = p.speaker;
+      delete line.acot;
+      delete line.scene;
+      mark(line, p);
+    }
+  }
+  return result;
+}
