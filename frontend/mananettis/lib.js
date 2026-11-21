@@ -240,3 +240,14 @@ export function toApiPatch(p, play) {
 export function pendingCount(patches) {
   return patches.filter((p) => p.pending || p.pendingUndo).length;
 }
+
+// Ids of the patches already folded into the play JSON (tools/consolidate.js records them).
+export function consolidatedIds(play) {
+  return (play.revisions ?? []).flatMap((r) => r.patches);
+}
+
+// Until make d1-clear marks them, the server still serves patches the JSON already contains.
+export function withoutConsolidated(patches, play) {
+  const done = new Set(consolidatedIds(play));
+  return done.size ? patches.filter((p) => !done.has(p.id)) : patches;
+}

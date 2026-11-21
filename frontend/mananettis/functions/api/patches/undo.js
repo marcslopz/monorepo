@@ -9,7 +9,7 @@ export async function onRequestPost({ request, env }) {
   if (!isSlug(body.play)) return badRequest("play");
   if (!isWho(body)) return badRequest("author/deviceId");
   await ensureSchema(env.DB);
-  const found = await env.DB.prepare("SELECT undone FROM patches WHERE id = ? AND play = ?").bind(body.id, body.play).first();
+  const found = await env.DB.prepare("SELECT undone FROM patches WHERE id = ? AND play = ? AND consolidated_at IS NULL").bind(body.id, body.play).first();
   if (!found) return json({ error: "not found" }, 404);
   if (!found.undone) {
     await env.DB

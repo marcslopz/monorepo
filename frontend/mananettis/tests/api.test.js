@@ -1,6 +1,6 @@
 import { test, describe, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { onRequestGet, onRequestPost } from "../functions/api/patches.js";
+import { onRequestGet, onRequestPost, ensureSchema } from "../functions/api/patches.js";
 import { onRequestPost as onUndo } from "../functions/api/patches/undo.js";
 import { fakeD1 } from "./d1-fake.js";
 
@@ -131,5 +131,30 @@ describe("without the D1 binding", () => {
       assert.equal(res.status, 503);
       assert.match((await res.json()).error, /DB/);
     }
+  });
+});
+
+describe("consolidated rows", () => {
+  test("GET and undo ignore rows marked consolidated", async () => {
+    await post(patch({ id: "c1" }));
+    await post(patch({ id: "c2" }));
+    await env.DB.prepare("UPDATE patches SET consolidated_at = ?, consolidated_in = ? WHERE id = ?").bind("2026-11-22T00:00:00Z", "abc123", "c1").run();
+    const { patches } = await (await get("?play=la-cita")).json();
+    assert.deepEqual(patches.map((p) => p.id), ["c2"]);
+    assert.equal((await undo({ id: "c1", play: "la-cita", author: "Pedro", deviceId: "d" })).status, 404);
+  });
+
+  test("a table from before the consolidated columns is upgraded keeping its rows", async () => {
+    await env.DB.prepare(`CREATE TABLE patches (id TEXT PRIMARY KEY, play TEXT NOT NULL, op TEXT NOT NULL,
+      line_id TEXT NOT NULL, after_id TEXT, speaker TEXT, text TEXT, author TEXT NOT NULL, device_id TEXT NOT NULL,
+      created_at TEXT NOT NULL, received_at TEXT NOT NULL, undone INTEGER NOT NULL DEFAULT 0, undone_by TEXT,
+      undone_device_id TEXT, undone_at TEXT)`).run();
+    await env.DB.prepare(`INSERT INTO patches (id, play, op, line_id, text, author, device_id, created_at, received_at)
+      VALUES ('old', 'la-cita', 'edit', 'l0002', 'x', 'Lorea', 'd', '2026-11-21T10:00:00.000Z', '2026-11-21T10:00:00.000Z')`).run();
+    const { patches } = await (await get("?play=la-cita")).json();
+    assert.deepEqual(patches.map((p) => p.id), ["old"]);
+    const cols = (await env.DB.prepare("SELECT name FROM pragma_table_info('patches')").all()).results.map((r) => r.name);
+    assert.ok(cols.includes("consolidated_at") && cols.includes("consolidated_in"));
+    await ensureSchema(env.DB); // idempotent
   });
 });

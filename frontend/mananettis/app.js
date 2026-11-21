@@ -24,6 +24,7 @@ import {
   mergePatches,
   toApiPatch,
   pendingCount,
+  withoutConsolidated,
 } from "./lib.js";
 
 const INDEX_URL = "plays/index.json";
@@ -71,7 +72,7 @@ async function pullPatches(slug) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const { patches: remote } = await res.json();
     if (play?.slug !== slug) return;
-    patches = mergePatches(patches, remote);
+    patches = mergePatches(patches, withoutConsolidated(remote, play));
     savePatches();
     syncOk = true;
     onPatchesChanged();
@@ -202,7 +203,7 @@ async function loadPlay(slug) {
   }
   if ($("playSelect").value && $("playSelect").value !== slug) return; // changed meanwhile
   play = loaded;
-  patches = readPatches(play.slug);
+  patches = withoutConsolidated(readPatches(play.slug), play);
   SCRIPT = applyPatches(play.lines, patches);
   $("subtitle").textContent = "Apuntador Mañanettis";
   document.querySelectorAll(".play-title").forEach((el) => { el.textContent = play.title; });
