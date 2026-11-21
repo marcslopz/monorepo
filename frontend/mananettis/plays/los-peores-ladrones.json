@@ -33,6 +33,12 @@
       "patches": [
         "17d802d3-40d5-4b26-ac0c-cf1acb0c99a2"
       ]
+    },
+    {
+      "date": "2026-11-21T10:16:25.588Z",
+      "patches": [
+        "1078f666-be4a-47d5-ad53-ef1b70e4aa1a"
+      ]
     }
   ],
   "lines": [
@@ -52,7 +58,7 @@
     {"id":"l0014","s":"RAQUEL","t":"¡¿Has abierto la caja fuerte?!"},
     {"id":"l0015","s":"RAMÓN","t":"Bueno... técnicamente, la he vaciado."},
     {"id":"l0016","s":"RAQUEL","t":"¡¡¡¿HAS ROBADO EL DINERO DE LA ADMINISTRACIÓN?!!!"},
-    {"id":"l0017","s":"RAMÓN","t":"¡No grites! ¡Que todavía no hemos abierto!"},
+    {"id":"l0017","s":"RAMÓN","t":"¡No grites! ¡Que todavía no hemos abierto! (Lo digo como enfadado)"},
     {"id":"l0018","s":"RAQUEL","t":"¡¿Pero tú estás loco?! ¡Habíamos acordado hacerlo juntos!"},
     {"id":"l0019","s":"RAMÓN","t":"Es que ha surgido."},
     {"id":"l0020","s":"RAQUEL","t":"¿Qué ha surgido? ¿El atraco?"},
