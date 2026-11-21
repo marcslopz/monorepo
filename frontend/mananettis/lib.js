@@ -216,15 +216,20 @@ export function describePatch(p, baseLines) {
   return p.op;
 }
 
-// Sync with /api/patches. Local copies may carry `pending` (not on the server yet) and `pendingUndo`
-// (undone here, undo not sent yet). The server is the truth for everything it has; local patches it
-// doesn't have survive only while pending (a sent one that's gone was consolidated or cleared).
+// Sync with /api/patches. Local copies may carry `pending` (not on the server yet), `pendingUndo` /
+// `pendingRedo` (undone / redone here, not sent yet). The server is the truth for everything it has,
+// except an undo/redo still waiting to be sent; local patches it doesn't have survive only while
+// pending (a sent one that's gone was consolidated or cleared).
 export function mergePatches(local, remote) {
   const localById = new Map(local.map((p) => [p.id, p]));
   const merged = remote.map(({ play, ...r }) => {
     const mine = localById.get(r.id);
     const p = { ...r };
-    if (mine?.undone && !r.undone) Object.assign(p, { undone: true, pendingUndo: true });
+    if (mine?.pendingUndo && !r.undone) Object.assign(p, { undone: true, pendingUndo: true });
+    if (mine?.pendingRedo && r.undone) {
+      delete p.undone;
+      p.pendingRedo = true;
+    }
     return p;
   });
   const remoteIds = new Set(remote.map((r) => r.id));
@@ -233,12 +238,33 @@ export function mergePatches(local, remote) {
 
 // The patch as POST /api/patches expects it (undo goes through /api/patches/undo).
 export function toApiPatch(p, play) {
-  const { pending, pendingUndo, undone, ...rest } = p;
+  const { pending, pendingUndo, pendingRedo, undone, ...rest } = p;
   return { ...rest, play };
 }
 
 export function pendingCount(patches) {
-  return patches.filter((p) => p.pending || p.pendingUndo).length;
+  return patches.filter((p) => p.pending || p.pendingUndo || p.pendingRedo).length;
+}
+
+const without = (p, ...keys) => {
+  const copy = { ...p };
+  for (const k of keys) delete copy[k];
+  return copy;
+};
+
+// Undo / redo here, to be sent later; one cancels a pending other (nothing to send then).
+export function markUndo(patches, id) {
+  return patches.map((p) => {
+    if (p.id !== id || p.undone) return p;
+    return p.pendingRedo ? { ...without(p, "pendingRedo"), undone: true } : { ...p, undone: true, pendingUndo: true };
+  });
+}
+
+export function markRedo(patches, id) {
+  return patches.map((p) => {
+    if (p.id !== id || !p.undone) return p;
+    return p.pendingUndo ? without(p, "undone", "pendingUndo") : { ...without(p, "undone"), pendingRedo: true };
+  });
 }
 
 // Ids of the patches already folded into the play JSON (tools/consolidate.js records them).
