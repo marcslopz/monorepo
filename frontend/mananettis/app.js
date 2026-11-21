@@ -18,13 +18,14 @@ import {
   applyPatches,
   newPatch,
   patchesFromEdit,
-  undoPatch,
   activePatches,
   describePatch,
   mergePatches,
   toApiPatch,
   pendingCount,
   withoutConsolidated,
+  markUndo,
+  markRedo,
 } from "./lib.js";
 
 const INDEX_URL = "plays/index.json";
@@ -106,13 +107,15 @@ async function pushPending() {
       clearFlag(p.id, "pending");
       savePatches();
     }
-    for (const p of patches.filter((x) => x.pendingUndo && !x.pending)) {
-      const who = { author: author || readLast().actor || p.author, deviceId: deviceId() };
-      const res = await postJson(`${API}/undo`, { id: p.id, play: slug, ...who });
-      if (res.status >= 500) throw new Error(`HTTP ${res.status}`);
-      if (play?.slug !== slug) return;
-      clearFlag(p.id, "pendingUndo");
-      savePatches();
+    for (const [flag, path] of [["pendingUndo", "undo"], ["pendingRedo", "redo"]]) {
+      for (const p of patches.filter((x) => x[flag] && !x.pending)) {
+        const who = { author: author || readLast().actor || p.author, deviceId: deviceId() };
+        const res = await postJson(`${API}/${path}`, { id: p.id, play: slug, ...who });
+        if (res.status >= 500) throw new Error(`HTTP ${res.status}`);
+        if (play?.slug !== slug) return;
+        clearFlag(p.id, flag);
+        savePatches();
+      }
     }
     syncOk = true;
   } catch {
@@ -624,7 +627,14 @@ function deleteCurrentLine() {
 }
 
 function undo(id) {
-  patches = undoPatch(patches, id).map((p) => (p.id === id ? { ...p, pendingUndo: true } : p));
+  patches = markUndo(patches, id);
+  savePatches();
+  refreshScript();
+  pushPending();
+}
+
+function redo(id) {
+  patches = markRedo(patches, id);
   savePatches();
   refreshScript();
   pushPending();
@@ -647,15 +657,20 @@ function openCorrections() {
 
 function renderCorrections() {
   const active = activePatches(patches).slice().reverse(); // newest first
+  const undoneOnes = patches.filter((p) => p.undone).reverse();
   // Corrections to added lines quote the added text (the base play doesn't have it).
   const added = patches.filter((p) => p.op === 'insert')
     .map((p) => (p.speaker ? { id: p.lineId, s: p.speaker, t: p.text } : { id: p.lineId, t: p.text, acot: true }));
   const known = [...play.lines, ...added];
-  $('patchList').innerHTML = active.length === 0
-    ? '<p class="patch-empty">Aún no hay correcciones en esta obra.</p>'
-    : active.map((p) => `<div class="patch-item"><div>${escapeHtml(describePatch(p, known))}
+  const item = (p, button) => `<div class="patch-item${p.undone ? ' is-undone' : ''}"><div>${escapeHtml(describePatch(p, known))}
         <div class="patch-meta">${escapeHtml(p.author ?? '')} · ${new Date(p.createdAt).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</div></div>
-        <button class="btn" onclick="undoFromList('${escapeHtml(p.id)}')">↶ Deshacer</button></div>`).join('');
+        ${button}</div>`;
+  const activeHtml = active.length === 0
+    ? '<p class="patch-empty">Aún no hay correcciones en esta obra.</p>'
+    : active.map((p) => item(p, `<button class="btn" onclick="undoFromList('${escapeHtml(p.id)}')">↶ Deshacer</button>`)).join('');
+  const undoneHtml = undoneOnes.length === 0 ? '' : '<div class="patch-section">Deshechas</div>' +
+    undoneOnes.map((p) => item(p, `<button class="btn" onclick="redoFromList('${escapeHtml(p.id)}')">↷ Rehacer</button>`)).join('');
+  $('patchList').innerHTML = activeHtml + undoneHtml;
 }
 
 function undoFromList(id) {
@@ -664,12 +679,18 @@ function undoFromList(id) {
   renderCorrections();
 }
 
+function redoFromList(id) {
+  if (!author) { alert('Para rehacer, vuelve al inicio y elige tu nombre en «¿Quién eres?».'); return; }
+  redo(id);
+  renderCorrections();
+}
+
 // Modules don't leak to window: expose what the inline onclick handlers call.
 Object.assign(window, {
   startSession, togglePlay, revealLine, restartScene, nextScene, prevScene,
   nextLine, prevLine, repeatLine, jumpTo, goSetup,
   openEditor, closeEditor, saveEditor, insertAfterCurrent, deleteCurrentLine, undoCurrentLine,
-  openCorrections, undoFromList,
+  openCorrections, undoFromList, redoFromList,
 });
 
 loadIndex();

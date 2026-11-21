@@ -1,7 +1,7 @@
 // Cloudflare Pages Function: shared corrections (patches) of the plays, stored in D1 (binding DB).
 //   GET  /api/patches?play=<slug>  → { patches: [...] } (undone ones included, oldest first)
 //   POST /api/patches  <patch>     → 201 stored | 200 already there (same id: safe to retry)
-// Undo lives in ./patches/undo.js. The table is created on first use (one table, no migrations).
+// Undo / redo live in ./patches/undo.js and ./patches/redo.js. The table is created on first use (one table, no migrations).
 // Rows folded into plays/<slug>.json are marked consolidated (make d1-clear) and no longer served.
 
 const OPS = new Set(["edit", "delete", "reassign", "insert"]);
@@ -27,13 +27,18 @@ const SCHEMA = [
     undone_device_id TEXT,
     undone_at TEXT,
     consolidated_at TEXT,
-    consolidated_in TEXT
+    consolidated_in TEXT,
+    redone_by TEXT,
+    redone_device_id TEXT,
+    redone_at TEXT
   )`,
   "CREATE INDEX IF NOT EXISTS patches_by_play ON patches (play, created_at)",
 ];
 
 // Columns added after the first deploy (tables created before get them with ALTER TABLE).
-const ADDED_COLUMNS = ["consolidated_at TEXT", "consolidated_in TEXT"];
+const ADDED_COLUMNS = [
+  "consolidated_at TEXT", "consolidated_in TEXT", "redone_by TEXT", "redone_device_id TEXT", "redone_at TEXT",
+];
 
 const ready = new WeakSet(); // DBs whose schema this isolate already ensured
 

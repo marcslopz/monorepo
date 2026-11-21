@@ -2,6 +2,7 @@ import { test, describe, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { onRequestGet, onRequestPost, ensureSchema } from "../functions/api/patches.js";
 import { onRequestPost as onUndo } from "../functions/api/patches/undo.js";
+import { onRequestPost as onRedo } from "../functions/api/patches/redo.js";
 import { fakeD1 } from "./d1-fake.js";
 
 let env;
@@ -156,5 +157,31 @@ describe("consolidated rows", () => {
     const cols = (await env.DB.prepare("SELECT name FROM pragma_table_info('patches')").all()).results.map((r) => r.name);
     assert.ok(cols.includes("consolidated_at") && cols.includes("consolidated_in"));
     await ensureSchema(env.DB); // idempotent
+  });
+});
+
+describe("POST /api/patches/redo", () => {
+  const redo = (body) =>
+    onRedo({ request: new Request(`${URL_BASE}/api/patches/redo`, { method: "POST", body: JSON.stringify(body) }), env });
+  const who = { play: "la-cita", author: "Manel", deviceId: "dev-3" };
+
+  test("reactivates an undone patch and records who did it", async () => {
+    const pt = patch({ id: "r1" });
+    await post(pt);
+    await undo({ id: "r1", play: "la-cita", author: "Pedro", deviceId: "dev-2" });
+    assert.equal((await redo({ id: "r1", ...who })).status, 200);
+    const { patches } = await (await get("?play=la-cita")).json();
+    assert.deepEqual(patches, [pt]);
+    const row = await env.DB.prepare("SELECT undone_by, redone_by, redone_device_id FROM patches WHERE id = 'r1'").first();
+    assert.deepEqual(row, { undone_by: "Pedro", redone_by: "Manel", redone_device_id: "dev-3" });
+  });
+
+  test("redo of an active patch is fine; unknown → 404; missing author → 400; no DB → 503", async () => {
+    await post(patch({ id: "r2" }));
+    assert.equal((await redo({ id: "r2", ...who })).status, 200);
+    assert.equal((await redo({ id: "nope", ...who })).status, 404);
+    assert.equal((await redo({ id: "r2", play: "la-cita", deviceId: "d" })).status, 400);
+    env = {};
+    assert.equal((await redo({ id: "r2", ...who })).status, 503);
   });
 });
