@@ -95,3 +95,10 @@ describe("consolidationMessage", () => {
     assert.ok(rest.some((l) => l === "Undone (not applied): 1"), msg);
   });
 });
+
+describe("consolidationMessage singular", () => {
+  test("1 correction (no plural s)", () => {
+    const { consumed } = consolidatePlay(play, [edit], NOW);
+    assert.equal(consolidationMessage(play, consumed).split("\n")[0], "mananettis: consolidate 1 correction into «Obra»");
+  });
+});

@@ -45,7 +45,7 @@ export function consolidationMessage(play, consumed) {
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     .map((p) => `- ${when(p.createdAt)} ${p.author}: ${describePatch(p, known)}`);
   if (undoneCount) body.push("", `Undone (not applied): ${undoneCount}`);
-  return [`mananettis: consolidate ${active.length} corrections into «${play.title}»`, "", ...body, ""].join("\n");
+  return [`mananettis: consolidate ${active.length} correction${active.length === 1 ? "" : "s"} into «${play.title}»`, "", ...body, ""].join("\n");
 }
 
 function parseArgs(argv) {
