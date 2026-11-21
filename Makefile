@@ -1,7 +1,7 @@
 # Default app — override with: make <target> APP=demo
 APP ?= demo
 
-.PHONY: help build dev stop clean logs shell-backend shell-frontend \
+.PHONY: help build dev stop clean logs shell-backend shell-frontend import \
         migrate migrate-create test test-unit test-integration test-e2e test-frontend \
         lint lint-fix lint-frontend typecheck-frontend format typecheck check check-all
 
@@ -34,7 +34,8 @@ help:
 	@echo "  check-all          lint + typecheck + lint-frontend"
 	@echo ""
 	@echo "Tests:"
-	@echo "  test               All backend tests for APP (mananettis: node --test in Docker)"
+	@echo "  test               All backend tests for APP (mananettis: node --test + Python unittest in Docker)"
+	@echo "  import             mananettis: docx -> plays/<slug>.json draft (FILE=plays/sources/x.docx [SLUG=])"
 	@echo "  test-unit          Unit tests for APP"
 	@echo "  test-integration   Integration tests for APP"
 	@echo "  test-e2e           E2E tests for APP"
@@ -108,10 +109,17 @@ check-all: lint typecheck lint-frontend typecheck-frontend
 # Tests
 # mananettis is a static app with no compose service: its tests run in a throwaway node container.
 NODE_IMAGE = node:22-alpine
+PYTHON_IMAGE = python:3.12-slim
 
 ifeq ($(APP),mananettis)
 test:
 	docker run --rm -v $(PWD)/frontend/mananettis:/app:ro -w /app $(NODE_IMAGE) node --test
+	docker run --rm -v $(PWD)/frontend/mananettis:/app:ro -w /app/tools -e PYTHONDONTWRITEBYTECODE=1 $(PYTHON_IMAGE) python -m unittest -v
+
+# docx -> plays/<slug>.json draft to review. FILE is relative to frontend/mananettis (e.g. plays/sources/x.docx).
+import:
+	@test -n "$(FILE)" || { echo "Usage: make import APP=mananettis FILE=plays/sources/<x>.docx [SLUG=<slug>]"; exit 2; }
+	docker run --rm -u $$(id -u):$$(id -g) -v $(PWD)/frontend/mananettis:/app -w /app -e PYTHONDONTWRITEBYTECODE=1 $(PYTHON_IMAGE) python -I tools/import_docx.py "$(FILE)" --out plays $(if $(SLUG),--slug $(SLUG))
 else
 test:
 	docker compose exec $(APP)-backend $(VENV)/pytest tests/ -v
