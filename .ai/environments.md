@@ -59,3 +59,6 @@
 - demo uses `--frozen-lockfile` (lock file committed); mariland uses `--ignore-workspace` only (no lock file)
 - mananettis (HTML estático, sin compose): `make test APP=mananettis` → `node --test` en un contenedor `node:22-alpine`;
   su CI (`ci-mananettis.yml`) corre solo en PR, porque Cloudflare Pages despliega `main` por su cuenta.
+  `make test` corre también los tests del importador (Python `unittest`, `python:3.12-slim`).
+  `make import APP=mananettis FILE=plays/sources/<x>.docx [SLUG=<slug>]` → borrador `plays/<slug>.json`
+  (no sobrescribe uno existente); los docx de `plays/sources/` no se commitean.
