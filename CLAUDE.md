@@ -8,6 +8,7 @@ Los archivos de contexto están en `.ai/`:
 - `.ai/structure.md` — estructura de carpetas
 - `.ai/architecture.md` — arquitectura hexagonal aplicada al backend
 - `.ai/environments.md` — entornos local, producción y CI
+- `.ai/mananettis.md` — app mananettis: correcciones en D1, consolidación, rollback
 
 Lee estos archivos al inicio de cada sesión para tener contexto del proyecto.
 
