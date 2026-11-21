@@ -9,6 +9,13 @@ Full-stack monorepo with FastAPI backends (hexagonal architecture) and React+Vit
 | App | Backend port | Frontend port | Description |
 |-----|-------------|---------------|-------------|
 | `demo` | 8000 | 5173 | Items CRUD — validates the full stack |
+| `mariland` | 8001 | 5174 | Flat (pisos) tracker |
+| `abacus` | 8002 | 5175 | Manual investment tracker |
+| `mananettis` | — | 5176 | Rehearsal prompter for a theatre class: static HTML + Cloudflare Pages Functions + D1, no backend app ([.ai/mananettis.md](.ai/mananettis.md)) |
+
+In production the backends run together in one Render service, `backend/gateway`, under path prefixes
+(`/demo`, `/mariland`, `/abacus`); frontends are on Cloudflare Pages. Details and URLs:
+[.ai/environments.md](.ai/environments.md).
 
 ## Stack
 
@@ -72,8 +79,10 @@ monorepo/
 ├── backend/
 │   ├── shared/                  # Shared Python utilities (auth, logging, etc.)
 │   │   └── src/shared/
+│   ├── gateway/                 # Production only: mounts every backend under a path prefix
+│   ├── mariland/ · abacus/      # Same layout as demo
 │   └── demo/                    # Demo app
-│       ├── src/app/
+│       ├── src/demo/            # Package named after the app
 │       │   ├── domain/          # Entities, ports (interfaces), exceptions
 │       │   ├── application/     # Use cases / services
 │       │   ├── infrastructure/  # DB, cache, auth implementations
@@ -86,6 +95,8 @@ monorepo/
 ├── frontend/
 │   ├── shared/                  # Shared React components and hooks
 │   │   └── src/
+│   ├── mariland/ · abacus/      # Same layout as demo
+│   ├── mananettis/              # Static app, no build (plays/, functions/api/, tools/)
 │   └── demo/                    # Demo app
 │       └── src/
 │           ├── api/             # API client + endpoint functions
@@ -105,7 +116,7 @@ monorepo/
 ### 1. Backend
 
 ```bash
-mkdir -p backend/newapp/{src/app/{domain/{models,ports},application/services,infrastructure/{persistence/repositories,cache,auth},presentation/{api,schemas}},tests/{unit,integration,e2e},alembic/versions}
+mkdir -p backend/newapp/{src/newapp/{domain/{models,ports},application/services,infrastructure/{persistence/repositories,cache,auth},presentation/{api,schemas}},tests/{unit,integration,e2e},alembic/versions}
 # Copy pyproject.toml and Dockerfile from backend/demo and adapt
 ```
 
