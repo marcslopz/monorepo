@@ -21,6 +21,9 @@ import {
   undoPatch,
   activePatches,
   describePatch,
+  mergePatches,
+  toApiPatch,
+  pendingCount,
 } from "./lib.js";
 
 const INDEX_URL = "plays/index.json";
@@ -50,6 +53,97 @@ function readPatches(slug) {
 }
 function savePatches() {
   try { localStorage.setItem(patchesKey(play.slug), JSON.stringify(patches)); } catch { /* private mode */ }
+}
+
+// Shared corrections: /api/patches (Pages Function + D1). localStorage is the cache and the outbox.
+const API = "api/patches";
+let syncOk = null; // null = not tried yet, false = last attempt failed
+let pushing = false;
+
+async function postJson(url, body) {
+  return fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+}
+
+// Server patches merged into the local ones, then whatever is still pending is sent.
+async function pullPatches(slug) {
+  try {
+    const res = await fetch(`${API}?play=${encodeURIComponent(slug)}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { patches: remote } = await res.json();
+    if (play?.slug !== slug) return;
+    patches = mergePatches(patches, remote);
+    savePatches();
+    syncOk = true;
+    onPatchesChanged();
+  } catch {
+    syncOk = false;
+    updateSyncNote();
+  }
+  await pushPending();
+}
+
+function clearFlag(id, flag) {
+  patches = patches.map((p) => {
+    if (p.id !== id) return p;
+    const { [flag]: _, ...rest } = p;
+    return rest;
+  });
+}
+
+// Sends pending patches, then pending undos. Network error or 5xx: stop and retry later
+// (next correction, reload, or back online). 4xx: the server will never take it, stop retrying.
+async function pushPending() {
+  if (pushing || !play) return;
+  pushing = true;
+  const slug = play.slug;
+  try {
+    for (const p of patches.filter((x) => x.pending)) {
+      const res = await postJson(API, toApiPatch(p, slug));
+      if (res.status >= 500) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) console.warn("Corrección rechazada por el servidor", p, await res.text());
+      if (play?.slug !== slug) return;
+      clearFlag(p.id, "pending");
+      savePatches();
+    }
+    for (const p of patches.filter((x) => x.pendingUndo && !x.pending)) {
+      const who = { author: author || readLast().actor || p.author, deviceId: deviceId() };
+      const res = await postJson(`${API}/undo`, { id: p.id, play: slug, ...who });
+      if (res.status >= 500) throw new Error(`HTTP ${res.status}`);
+      if (play?.slug !== slug) return;
+      clearFlag(p.id, "pendingUndo");
+      savePatches();
+    }
+    syncOk = true;
+  } catch {
+    syncOk = false;
+  } finally {
+    pushing = false;
+    updateSyncNote();
+  }
+}
+
+window.addEventListener("online", () => pushPending());
+
+function updateSyncNote() {
+  if (!play) return;
+  const waiting = pendingCount(patches);
+  $("patchesBtn").textContent = `Correcciones (${activePatches(patches).length})${waiting ? " ⟳" : ""}`;
+  $("syncNote").textContent = waiting
+    ? `${waiting} sin enviar (sin conexión): se enviarán solas cuando vuelva.`
+    : syncOk === false
+      ? "No se pudo conectar: ves las correcciones guardadas en este dispositivo."
+      : "Las correcciones se comparten con toda la clase.";
+}
+
+// New corrections from the server (or sent): re-apply wherever we are.
+function onPatchesChanged() {
+  if ($("player").style.display === "flex") {
+    refreshScript();
+    if ($("patchesDialog").open) renderCorrections();
+  } else {
+    SCRIPT = applyPatches(play.lines, patches);
+    updateSyncNote();
+  }
 }
 
 const uuid = () =>
@@ -121,7 +215,7 @@ async function loadPlay(slug) {
   const scenes = sceneStarts(SCRIPT);
   $("startFrom").innerHTML =
     '<option value="0">Desde el principio</option>' +
-    scenes.map((s) => `<option value="${s.idx}">${escapeHtml(s.title)}</option>`).join("");
+    scenes.map((s) => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.title)}</option>`).join("");
   // Plays without scenes (Los peores ladrones): no scene picker, no scene buttons.
   $("startFromField").style.display = scenes.length ? "" : "none";
   $("sceneControls").style.display = scenes.length ? "" : "none";
@@ -131,6 +225,8 @@ async function loadPlay(slug) {
     $("actorSelect").value = last.actor;
     checkCastOf(last.actor);
   }
+  updateSyncNote();
+  pullPatches(play.slug);
 }
 
 // Picking an actor ticks their characters; the ticks can then be changed (double roles, standing in).
@@ -211,7 +307,7 @@ function startSession() {
   $('subtitle').textContent = 'Apuntador Mañanettis · ' + selectionLabel(actorVal, chosen);
   pauseSecs = parseInt($('pauseSecs').value);
   speechRate = parseFloat($('rateSelect').value);
-  currentIdx = parseInt($('startFrom').value) || 0;
+  currentIdx = Math.max(0, SCRIPT.findIndex((l) => l.id === $('startFrom').value));
 
   $('setup').style.display = 'none';
   $('player').style.display = 'flex';
@@ -232,7 +328,7 @@ function renderScriptList() {
     const mine = isMyLine(l);
     return `<div class="sl-item${mine?' is-mine':''}${fixed}" id="sl${i}" onclick="jumpTo(${i})"><span class="sl-speaker">${escapeHtml(l.s)}</span>${cut(l.t, 55)}</div>`;
   }).join('');
-  $('patchesBtn').textContent = `Correcciones (${activePatches(patches).length})`;
+  updateSyncNote();
 }
 
 function updateDisplay() {
@@ -490,9 +586,10 @@ const patchCtx = () => ({ author, deviceId: deviceId(), now: new Date().toISOStr
 // Saves new patches and re-applies them, staying on the same line (or on the new one).
 function commitPatches(newPatches, focusId) {
   if (newPatches.length === 0) return;
-  patches = [...patches, ...newPatches];
+  patches = [...patches, ...newPatches.map((p) => ({ ...p, pending: true }))];
   savePatches();
   refreshScript(focusId);
+  pushPending();
 }
 
 function refreshScript(focusId) {
@@ -526,9 +623,10 @@ function deleteCurrentLine() {
 }
 
 function undo(id) {
-  patches = undoPatch(patches, id);
+  patches = undoPatch(patches, id).map((p) => (p.id === id ? { ...p, pendingUndo: true } : p));
   savePatches();
   refreshScript();
+  pushPending();
 }
 
 // Undoes the latest correction of the current line.
@@ -543,6 +641,7 @@ function openCorrections() {
   pausePlayback();
   renderCorrections();
   $('patchesDialog').showModal();
+  pullPatches(play.slug); // see the latest from the rest of the class
 }
 
 function renderCorrections() {
@@ -558,7 +657,11 @@ function renderCorrections() {
         <button class="btn" onclick="undoFromList('${escapeHtml(p.id)}')">↶ Deshacer</button></div>`).join('');
 }
 
-function undoFromList(id) { undo(id); renderCorrections(); }
+function undoFromList(id) {
+  if (!author) { alert('Para deshacer, vuelve al inicio y elige tu nombre en «¿Quién eres?».'); return; }
+  undo(id);
+  renderCorrections();
+}
 
 // Modules don't leak to window: expose what the inline onclick handlers call.
 Object.assign(window, {
