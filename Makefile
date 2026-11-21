@@ -34,7 +34,7 @@ help:
 	@echo "  check-all          lint + typecheck + lint-frontend"
 	@echo ""
 	@echo "Tests:"
-	@echo "  test               All backend tests for APP"
+	@echo "  test               All backend tests for APP (mananettis: node --test in Docker)"
 	@echo "  test-unit          Unit tests for APP"
 	@echo "  test-integration   Integration tests for APP"
 	@echo "  test-e2e           E2E tests for APP"
@@ -100,8 +100,16 @@ check: lint typecheck
 check-all: lint typecheck lint-frontend typecheck-frontend
 
 # Tests
+# mananettis is a static app with no compose service: its tests run in a throwaway node container.
+NODE_IMAGE = node:22-alpine
+
+ifeq ($(APP),mananettis)
+test:
+	docker run --rm -v $(PWD)/frontend/mananettis:/app:ro -w /app $(NODE_IMAGE) node --test
+else
 test:
 	docker compose exec $(APP)-backend $(VENV)/pytest tests/ -v
+endif
 
 test-unit:
 	docker compose exec $(APP)-backend $(VENV)/pytest tests/unit/ -v

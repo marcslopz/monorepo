@@ -1,0 +1,24 @@
+name: CI — mananettis
+
+# Only on PRs: Cloudflare Pages deploys main by itself, and merges require green checks.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'frontend/mananettis/**'
+      - '.github/workflows/ci-mananettis.yml'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/mananettis
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test
+        run: node --test
