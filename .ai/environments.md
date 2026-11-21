@@ -16,6 +16,7 @@
 | demo     | Frontend   | Cloudflare Pages  | https://monorepo-c00.pages.dev           |
 | mariland | Frontend   | Cloudflare Pages  | https://mariland.pages.dev               |
 | abacus   | Frontend   | Cloudflare Pages  | https://abacus-6zj.pages.dev             |
+| mananettis | Frontend + API | Cloudflare Pages + D1 | https://mananettis.pages.dev     |
 | gateway  | Backend    | Render            | https://gateway-8ij4.onrender.com        |
 | demo     | Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
 | mariland | Database   | Neon (PostgreSQL) | eu-central-1, AWS                        |
@@ -62,14 +63,5 @@
   `make test` corre también los tests del importador (Python `unittest`, `python:3.12-slim`).
   `make import APP=mananettis FILE=plays/sources/<x>.docx [SLUG=<slug>]` → borrador `plays/<slug>.json`
   (no sobrescribe uno existente); los docx de `plays/sources/` no se commitean.
-  API de correcciones: Pages Functions en `functions/api/` (`/api/patches`, `/api/patches/undo`) sobre
-  D1 con binding `DB` configurado en el panel de Pages (una D1 para producción y otra para previews; sin
-  `wrangler.toml`). La tabla la crea la propia Function (`CREATE TABLE IF NOT EXISTS`).
-  `make dev APP=mananettis` → `wrangler pages dev` con D1 local (`.wrangler/`, ignorado) en :5176.
-  Consolidar (histórico: en D1 nada se borra; el JSON lleva `revisions` con los ids consolidados):
-  `make consolidate APP=mananettis PLAY=<slug> [API=<url>]` → aplica las correcciones al JSON e imprime
-  el mensaje de commit → PR → merge/deploy → `make d1-clear APP=mananettis PLAY=<slug>` (desde `main`;
-  marca esos ids como consolidados). Deshacer en bloque: `make rollback APP=mananettis PLAY=<slug>
-  SINCE=<iso UTC> [AUTHOR=] [DEVICE=]` (lista; `CONFIRM=1` aplica). `d1-clear`/`rollback` usan wrangler
-  con `CLOUDFLARE_API_TOKEN` (D1 Edit) y `CLOUDFLARE_ACCOUNT_ID` del entorno; `DB=mananettis-preview`
-  para probar contra la D1 de previews.
+  API de correcciones (Pages Functions + D1), `make dev`, consolidación (`make consolidate` /
+  `d1-clear`), `make rollback` y credenciales: ver `.ai/mananettis.md`.

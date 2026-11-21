@@ -30,6 +30,12 @@ monorepo/
 ├── frontend/
 │   ├── demo/                       # Demo frontend (React + TS + Tailwind)
 │   ├── mariland/                   # Mariland frontend (React + TS + Tailwind)
+│   ├── mananettis/                 # Static app, no build (see .ai/mananettis.md)
+│   │   ├── index.html, app.js, lib.js  # UI + pure logic (lib.js is what the tests cover)
+│   │   ├── plays/                  # <slug>.json scripts + index.json
+│   │   ├── functions/api/          # Cloudflare Pages Functions: /api/patches (+ /undo, /redo) on D1
+│   │   ├── tools/                  # import_docx.py, consolidate.js, d1-sql.js
+│   │   └── tests/                  # node --test (+ tools/test_import_docx.py)
 │   └── <app>/
 │       ├── Dockerfile
 │       └── src/
