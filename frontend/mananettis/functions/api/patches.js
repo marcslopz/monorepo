@@ -2,6 +2,7 @@
 //   GET  /api/patches?play=<slug>  → { patches: [...] } (undone ones included, oldest first)
 //   POST /api/patches  <patch>     → 201 stored | 200 already there (same id: safe to retry)
 // Undo lives in ./patches/undo.js. The table is created on first use (one table, no migrations).
+// Rows folded into plays/<slug>.json are marked consolidated (make d1-clear) and no longer served.
 
 const OPS = new Set(["edit", "delete", "reassign", "insert"]);
 const SLUG = /^[a-z0-9-]{1,64}$/;
@@ -24,16 +25,25 @@ const SCHEMA = [
     undone INTEGER NOT NULL DEFAULT 0,
     undone_by TEXT,
     undone_device_id TEXT,
-    undone_at TEXT
+    undone_at TEXT,
+    consolidated_at TEXT,
+    consolidated_in TEXT
   )`,
   "CREATE INDEX IF NOT EXISTS patches_by_play ON patches (play, created_at)",
 ];
+
+// Columns added after the first deploy (tables created before get them with ALTER TABLE).
+const ADDED_COLUMNS = ["consolidated_at TEXT", "consolidated_in TEXT"];
 
 const ready = new WeakSet(); // DBs whose schema this isolate already ensured
 
 export async function ensureSchema(db) {
   if (ready.has(db)) return;
   await db.batch(SCHEMA.map((sql) => db.prepare(sql)));
+  const { results } = await db.prepare("SELECT name FROM pragma_table_info('patches')").all();
+  const have = new Set(results.map((r) => r.name));
+  const missing = ADDED_COLUMNS.filter((c) => !have.has(c.split(" ")[0]));
+  if (missing.length) await db.batch(missing.map((c) => db.prepare(`ALTER TABLE patches ADD COLUMN ${c}`)));
   ready.add(db);
 }
 
@@ -100,7 +110,7 @@ export async function onRequestGet({ request, env }) {
   if (!isSlug(play)) return badRequest("play");
   await ensureSchema(env.DB);
   const { results } = await env.DB
-    .prepare("SELECT * FROM patches WHERE play = ? ORDER BY created_at, received_at, id")
+    .prepare("SELECT * FROM patches WHERE play = ? AND consolidated_at IS NULL ORDER BY created_at, received_at, id")
     .bind(play)
     .all();
   return json({ patches: results.map(toPatch) });

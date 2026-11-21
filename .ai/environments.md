@@ -66,3 +66,10 @@
   D1 con binding `DB` configurado en el panel de Pages (una D1 para producción y otra para previews; sin
   `wrangler.toml`). La tabla la crea la propia Function (`CREATE TABLE IF NOT EXISTS`).
   `make dev APP=mananettis` → `wrangler pages dev` con D1 local (`.wrangler/`, ignorado) en :5176.
+  Consolidar (histórico: en D1 nada se borra; el JSON lleva `revisions` con los ids consolidados):
+  `make consolidate APP=mananettis PLAY=<slug> [API=<url>]` → aplica las correcciones al JSON e imprime
+  el mensaje de commit → PR → merge/deploy → `make d1-clear APP=mananettis PLAY=<slug>` (desde `main`;
+  marca esos ids como consolidados). Deshacer en bloque: `make rollback APP=mananettis PLAY=<slug>
+  SINCE=<iso UTC> [AUTHOR=] [DEVICE=]` (lista; `CONFIRM=1` aplica). `d1-clear`/`rollback` usan wrangler
+  con `CLOUDFLARE_API_TOKEN` (D1 Edit) y `CLOUDFLARE_ACCOUNT_ID` del entorno; `DB=mananettis-preview`
+  para probar contra la D1 de previews.

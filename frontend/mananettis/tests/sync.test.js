@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { mergePatches, toApiPatch, pendingCount } from "../lib.js";
+import { mergePatches, toApiPatch, pendingCount, withoutConsolidated } from "../lib.js";
 
 const base = { op: "edit", lineId: "l0002", text: "x", author: "Lorea", deviceId: "d1", createdAt: "2026-11-21T10:00:00.000Z" };
 const p = (id, fields = {}) => ({ id, ...base, ...fields });
@@ -47,5 +47,13 @@ describe("toApiPatch", () => {
 describe("pendingCount", () => {
   test("counts patches or undos still to send", () => {
     assert.equal(pendingCount([p("a", { pending: true }), p("b", { pendingUndo: true }), p("c")]), 2);
+  });
+});
+
+describe("withoutConsolidated", () => {
+  test("drops patches already folded into the play (ids in its revisions)", () => {
+    const play = { revisions: [{ date: "x", patches: ["a"] }] };
+    assert.deepEqual(withoutConsolidated([p("a"), p("b")], play).map((x) => x.id), ["b"]);
+    assert.deepEqual(withoutConsolidated([p("a")], {}).map((x) => x.id), ["a"]);
   });
 });

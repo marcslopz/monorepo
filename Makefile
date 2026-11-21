@@ -36,6 +36,9 @@ help:
 	@echo "Tests:"
 	@echo "  test               All backend tests for APP (mananettis: node --test + Python unittest in Docker)"
 	@echo "  import             mananettis: docx -> plays/<slug>.json draft (FILE=plays/sources/x.docx [SLUG=])"
+	@echo "  consolidate        mananettis: shared corrections -> plays/<PLAY>.json + commit message [API=]"
+	@echo "  d1-clear           mananettis: mark PLAY's consolidated patches in D1 (from main, after deploy) [DB=]"
+	@echo "  rollback           mananettis: bulk undo PLAY SINCE= [AUTHOR=] [DEVICE=]; CONFIRM=1 applies [DB=]"
 	@echo "  test-unit          Unit tests for APP"
 	@echo "  test-integration   Integration tests for APP"
 	@echo "  test-e2e           E2E tests for APP"
@@ -122,6 +125,58 @@ test:
 import:
 	@test -n "$(FILE)" || { echo "Usage: make import APP=mananettis FILE=plays/sources/<x>.docx [SLUG=<slug>]"; exit 2; }
 	docker run --rm -u $$(id -u):$$(id -g) -v $(PWD)/frontend/mananettis:/app -w /app -e PYTHONDONTWRITEBYTECODE=1 $(PYTHON_IMAGE) python -I tools/import_docx.py "$(FILE)" --out plays $(if $(SLUG),--slug $(SLUG))
+
+# --- Shared corrections (D1). See frontend/mananettis/tools/consolidate.js and tools/d1-sql.js.
+# consolidate: GET /api/patches (public) -> applies them to plays/$(PLAY).json + prints the commit message.
+#   API= to read another deployment (e.g. a preview URL).
+# d1-clear / rollback: wrangler against D1 (DB=mananettis by default; DB=mananettis-preview to test).
+#   Need CLOUDFLARE_API_TOKEN (Account > D1 > Edit) and CLOUDFLARE_ACCOUNT_ID (shell or frontend/mananettis/.env).
+DB ?= mananettis
+# Credentials can live in frontend/mananettis/.env (gitignored; see .env.example there).
+# Variables already exported in the shell win over the file.
+MNT_ENV = frontend/mananettis/.env
+LOAD_MNT_ENV = set -a; [ -f $(MNT_ENV) ] && . ./$(MNT_ENV); set +a
+MNT_NODE = docker run --rm -u $$(id -u):$$(id -g) -v $(PWD)/frontend/mananettis:/app -w /app $(NODE_IMAGE) node
+WRANGLER = docker run --rm -e CLOUDFLARE_API_TOKEN -e CLOUDFLARE_ACCOUNT_ID -e HOME=/tmp -u $$(id -u):$$(id -g) node:22 npx -y wrangler@4
+
+define need_play
+	@test -n "$(PLAY)" || { echo "Falta PLAY=<slug> (p. ej. PLAY=la-cita)"; exit 2; }
+endef
+define need_cloudflare
+	@T="$$CLOUDFLARE_API_TOKEN" A="$$CLOUDFLARE_ACCOUNT_ID"; $(LOAD_MNT_ENV); \
+		test -n "$${T:-$$CLOUDFLARE_API_TOKEN}" -a -n "$${A:-$$CLOUDFLARE_ACCOUNT_ID}" || \
+		{ echo "Faltan CLOUDFLARE_API_TOKEN y/o CLOUDFLARE_ACCOUNT_ID (en el entorno o en $(MNT_ENV))"; exit 2; }
+endef
+
+consolidate:
+	$(need_play)
+	$(MNT_NODE) tools/consolidate.js $(PLAY) $(if $(API),--api $(API))
+
+# Only once the consolidated JSON is in main and deployed: marks its revisions' patch ids in D1.
+d1-clear:
+	$(need_play)
+	$(need_cloudflare)
+	@test "$$(git rev-parse --abbrev-ref HEAD)" = main || { echo "Ejecuta d1-clear desde main (con el JSON consolidado ya mergeado)"; exit 2; }
+	@git fetch -q origin main && git diff --quiet origin/main -- frontend/mananettis/plays/$(PLAY).json || { echo "plays/$(PLAY).json difiere de origin/main: mergea y despliega primero"; exit 2; }
+	@T="$$CLOUDFLARE_API_TOKEN" A="$$CLOUDFLARE_ACCOUNT_ID"; $(LOAD_MNT_ENV); \
+		export CLOUDFLARE_API_TOKEN="$${T:-$$CLOUDFLARE_API_TOKEN}" CLOUDFLARE_ACCOUNT_ID="$${A:-$$CLOUDFLARE_ACCOUNT_ID}"; \
+		SQL=$$($(MNT_NODE) tools/d1-sql.js clear $(PLAY) $$(git rev-parse --short HEAD)) && echo "$$SQL" && \
+		$(WRANGLER) d1 execute $(DB) --remote --command "$$SQL"
+
+# Bulk undo: make rollback APP=mananettis PLAY=<slug> SINCE=<iso> [AUTHOR=] [DEVICE=] -> lists; add CONFIRM=1 to apply.
+rollback:
+	$(need_play)
+	$(need_cloudflare)
+	@test -n "$(SINCE)" || { echo "Falta SINCE=<fecha ISO, UTC> (p. ej. SINCE=2026-11-21T18:00)"; exit 2; }
+	@T="$$CLOUDFLARE_API_TOKEN" A="$$CLOUDFLARE_ACCOUNT_ID"; $(LOAD_MNT_ENV); \
+		export CLOUDFLARE_API_TOKEN="$${T:-$$CLOUDFLARE_API_TOKEN}" CLOUDFLARE_ACCOUNT_ID="$${A:-$$CLOUDFLARE_ACCOUNT_ID}"; \
+		FLAGS="$(if $(AUTHOR),--author '$(AUTHOR)') $(if $(DEVICE),--device $(DEVICE))"; \
+		SQL=$$(eval $(MNT_NODE) tools/d1-sql.js rollback $(PLAY) $(SINCE) $$FLAGS --select) && \
+		$(WRANGLER) d1 execute $(DB) --remote --command "$$SQL"; \
+		if [ "$(CONFIRM)" = 1 ]; then \
+			SQL=$$(eval $(MNT_NODE) tools/d1-sql.js rollback $(PLAY) $(SINCE) $$FLAGS --update) && \
+			$(WRANGLER) d1 execute $(DB) --remote --command "$$SQL" && echo "Deshechos (reversible: undone=1, undone_by='rollback')."; \
+		else echo "Solo listado. Repite con CONFIRM=1 para deshacer estas correcciones."; fi
 else
 test:
 	docker compose exec $(APP)-backend $(VENV)/pytest tests/ -v
