@@ -215,3 +215,28 @@ export function describePatch(p, baseLines) {
   if (p.op === "reassign") return line ? `${who(line)} → ${p.speaker}: ${quote(line.t)}` : `Línea añadida → ${p.speaker}`;
   return p.op;
 }
+
+// Sync with /api/patches. Local copies may carry `pending` (not on the server yet) and `pendingUndo`
+// (undone here, undo not sent yet). The server is the truth for everything it has; local patches it
+// doesn't have survive only while pending (a sent one that's gone was consolidated or cleared).
+export function mergePatches(local, remote) {
+  const localById = new Map(local.map((p) => [p.id, p]));
+  const merged = remote.map(({ play, ...r }) => {
+    const mine = localById.get(r.id);
+    const p = { ...r };
+    if (mine?.undone && !r.undone) Object.assign(p, { undone: true, pendingUndo: true });
+    return p;
+  });
+  const remoteIds = new Set(remote.map((r) => r.id));
+  return [...merged, ...local.filter((p) => !remoteIds.has(p.id) && p.pending)];
+}
+
+// The patch as POST /api/patches expects it (undo goes through /api/patches/undo).
+export function toApiPatch(p, play) {
+  const { pending, pendingUndo, undone, ...rest } = p;
+  return { ...rest, play };
+}
+
+export function pendingCount(patches) {
+  return patches.filter((p) => p.pending || p.pendingUndo).length;
+}
