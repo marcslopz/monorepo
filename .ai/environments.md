@@ -62,3 +62,7 @@
   `make test` corre también los tests del importador (Python `unittest`, `python:3.12-slim`).
   `make import APP=mananettis FILE=plays/sources/<x>.docx [SLUG=<slug>]` → borrador `plays/<slug>.json`
   (no sobrescribe uno existente); los docx de `plays/sources/` no se commitean.
+  API de correcciones: Pages Functions en `functions/api/` (`/api/patches`, `/api/patches/undo`) sobre
+  D1 con binding `DB` configurado en el panel de Pages (una D1 para producción y otra para previews; sin
+  `wrangler.toml`). La tabla la crea la propia Function (`CREATE TABLE IF NOT EXISTS`).
+  `make dev APP=mananettis` → `wrangler pages dev` con D1 local (`.wrangler/`, ignorado) en :5176.

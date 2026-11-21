@@ -1,3 +1,4 @@
 # Source docx are copied here only to import them; never committed (see tools/import_docx.py).
 plays/sources/
 __pycache__/
+.wrangler/

@@ -12,7 +12,7 @@ help:
 	@echo ""
 	@echo "Infrastructure:"
 	@echo "  build              Build containers for APP (also updates deps)"
-	@echo "  dev                Start APP services (mananettis: static server on :5176)"
+	@echo "  dev                Start APP services (mananettis: wrangler pages dev + local D1 on :5176)"
 	@echo "  stop               Stop all services"
 	@echo "  clean              Stop and remove all volumes (fresh start)"
 	@echo "  logs               Follow logs"
@@ -46,9 +46,11 @@ build:
 	docker compose build $(APP)-backend $(APP)-frontend
 
 ifeq ($(APP),mananettis)
-# Static site: plain HTTP server (fetch() doesn't work from file://). http://localhost:5176
+# Static site + Pages Functions (/api/patches) with a local D1 kept in frontend/mananettis/.wrangler/.
+# http://localhost:5176 (the first run downloads wrangler, ~1 min). Full node image: workerd needs CA certificates.
 dev:
-	docker run --rm -p 5176:8000 -v $(PWD)/frontend/mananettis:/app:ro -w /app python:3.12-slim python -m http.server 8000
+	docker run --rm -it -p 5176:8788 -u $$(id -u):$$(id -g) -e HOME=/tmp -v $(PWD)/frontend/mananettis:/app -w /app node:22 \
+		npx -y wrangler@4 pages dev . --d1 DB=mananettis-local --ip 0.0.0.0 --port 8788
 else
 dev:
 	cp -n .env.example .env 2>/dev/null || true
