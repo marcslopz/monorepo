@@ -443,6 +443,89 @@
     font-size: 26px;
     margin-bottom: 8px;
   }
+  /* Corrections */
+  .sl-item.is-corrected::after { content: " ✎"; color: var(--gold-dim); }
+  .corrected-badge {
+    margin-left: 8px;
+    color: var(--gold-dim);
+    letter-spacing: 0.05em;
+    text-transform: none;
+  }
+  .script-list-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .script-list-head .script-list-label { margin-bottom: 0; }
+  .btn-link {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  dialog.sheet {
+    margin: auto;
+    width: min(calc(100vw - 32px), 480px);
+    max-height: calc(100vh - 32px);
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  dialog.sheet::backdrop { background: rgba(0, 0, 0, 0.65); }
+  dialog.sheet h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+    font-weight: 400;
+    font-size: 20px;
+    margin-bottom: 1rem;
+  }
+  dialog.sheet .ctrl-row { margin-top: 8px; }
+  textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.5;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    resize: vertical;
+  }
+  .edit-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 6px 0 4px;
+  }
+  .patch-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 55vh;
+    overflow-y: auto;
+  }
+  .patch-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .patch-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .patch-item .btn { flex: 0 0 auto; padding: 6px 10px; font-size: 12px; }
+  .patch-empty { color: var(--text-dim); font-size: 13px; }
+
   .finished-screen p {
     color: var(--text-dim);
     font-size: 14px;
@@ -534,6 +617,7 @@
     </div>
     <div class="ctrl-row">
       <button class="btn" data-nav onclick="repeatLine()">↺ Repetir</button>
+      <button class="btn" onclick="openEditor()">✎ Corregir</button>
       <button class="btn btn-danger" onclick="goSetup()">✕ Salir</button>
     </div>
     <div class="ctrl-row" id="sceneControls">
@@ -544,10 +628,42 @@
   </div>
 
   <div class="script-list-wrap">
-    <div class="script-list-label">Guion completo</div>
+    <div class="script-list-head">
+      <div class="script-list-label">Guion completo</div>
+      <button class="btn-link" id="patchesBtn" onclick="openCorrections()">Correcciones (0)</button>
+    </div>
     <div class="script-list" id="scriptList"></div>
   </div>
 </div>
+
+<dialog class="sheet" id="editDialog">
+  <h3 id="editTitle">Corregir línea</h3>
+  <div id="editSpeakerField">
+    <span class="field-label">Personaje</span>
+    <select id="editSpeaker"></select>
+  </div>
+  <span class="field-label">Texto</span>
+  <textarea id="editText" rows="4"></textarea>
+  <p class="edit-hint">Lo que va entre paréntesis se ve pero no se lee en voz alta.</p>
+  <div class="ctrl-row">
+    <button class="btn btn-play" onclick="saveEditor()">Guardar</button>
+    <button class="btn" onclick="closeEditor()">Cancelar</button>
+  </div>
+  <div class="ctrl-row" id="editLineActions">
+    <button class="btn" onclick="insertAfterCurrent()">＋ Añadir después</button>
+    <button class="btn" id="undoLineBtn" onclick="undoCurrentLine()">↶ Deshacer</button>
+    <button class="btn btn-danger" onclick="deleteCurrentLine()">🗑 Borrar</button>
+  </div>
+</dialog>
+
+<dialog class="sheet" id="patchesDialog">
+  <h3>Correcciones</h3>
+  <p class="edit-hint" style="margin-bottom:12px">De momento se guardan solo en este dispositivo.</p>
+  <div class="patch-list" id="patchList"></div>
+  <div class="ctrl-row">
+    <button class="btn" onclick="document.getElementById('patchesDialog').close()">Cerrar</button>
+  </div>
+</dialog>
 
 <script type="module" src="app.js"></script>
 </body>

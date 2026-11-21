@@ -15,14 +15,25 @@ import {
   nextLineIdx,
   prevLineIdx,
   actorLabel,
+  applyPatches,
+  newPatch,
+  patchesFromEdit,
+  undoPatch,
+  activePatches,
+  describePatch,
 } from "./lib.js";
 
 const INDEX_URL = "plays/index.json";
 const LAST_KEY = "mananettis:last"; // { play, actor } of the previous session, per browser
 
+const DEVICE_KEY = "mananettis:device"; // random id of this browser, sent with each correction
+const patchesKey = (slug) => `mananettis:patches:${slug}`;
+
 let play = null;
-let SCRIPT = [];
+let SCRIPT = []; // play.lines with the corrections applied
 let myChars = new Set();
+let patches = []; // corrections of the current play (undone ones included)
+let author = ""; // actor chosen in "¿Quién eres?"; needed to correct
 
 const $ = (id) => document.getElementById(id);
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -32,6 +43,24 @@ function readLast() {
 }
 function saveLast(last) {
   try { localStorage.setItem(LAST_KEY, JSON.stringify(last)); } catch { /* private mode */ }
+}
+
+function readPatches(slug) {
+  try { return JSON.parse(localStorage.getItem(patchesKey(slug))) ?? []; } catch { return []; }
+}
+function savePatches() {
+  try { localStorage.setItem(patchesKey(play.slug), JSON.stringify(patches)); } catch { /* private mode */ }
+}
+
+const uuid = () =>
+  globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+
+function deviceId() {
+  try {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (!id) { id = uuid(); localStorage.setItem(DEVICE_KEY, id); }
+    return id;
+  } catch { return "sin-almacenamiento"; }
 }
 
 async function fetchJson(url) {
@@ -79,13 +108,14 @@ async function loadPlay(slug) {
   }
   if ($("playSelect").value && $("playSelect").value !== slug) return; // changed meanwhile
   play = loaded;
-  SCRIPT = play.lines;
+  patches = readPatches(play.slug);
+  SCRIPT = applyPatches(play.lines, patches);
   $("subtitle").textContent = "Apuntador Mañanettis";
   document.querySelectorAll(".play-title").forEach((el) => { el.textContent = play.title; });
   $("actorSelect").innerHTML =
     '<option value="">— Selecciona tu nombre —</option>' +
     play.cast.map((c) => `<option value="${escapeHtml(c.actor)}">${escapeHtml(actorLabel(c))}</option>`).join("");
-  $("charList").innerHTML = speakingCharacters(play)
+  $("charList").innerHTML = speakingCharacters({ ...play, lines: SCRIPT })
     .map((name) => `<label class="char-chip"><input type="checkbox" value="${escapeHtml(name)}">${escapeHtml(name)}</label>`)
     .join("");
   const scenes = sceneStarts(SCRIPT);
@@ -176,6 +206,7 @@ function startSession() {
   const chosen = checkedCharacters();
   if (chosen.length === 0) { alert('Elige tu nombre o marca al menos un personaje.'); return; }
   myChars = charactersOfNames(play, chosen);
+  author = actorVal;
   saveLast({ play: play.slug, actor: actorVal });
   $('subtitle').textContent = 'Apuntador Mañanettis · ' + selectionLabel(actorVal, chosen);
   pauseSecs = parseInt($('pauseSecs').value);
@@ -190,14 +221,18 @@ function startSession() {
 
 function isMyLine(line) { return isMyLineOf(line, myChars); }
 
+const cut = (t, n) => escapeHtml(t.length > n ? t.substring(0, n) + '…' : t);
+
 function renderScriptList() {
   const el = $('scriptList');
   el.innerHTML = SCRIPT.map((l, i) => {
-    if (l.scene) return `<div class="sl-item" id="sl${i}" onclick="jumpTo(${i})" style="color:var(--text-muted);font-style:italic">— ${l.t} —</div>`;
-    if (l.acot) return `<div class="sl-item" id="sl${i}" onclick="jumpTo(${i})" style="color:var(--text-muted);font-size:11px;font-style:italic">${l.t.substring(0,60)}${l.t.length>60?'…':''}</div>`;
+    const fixed = l.patches ? ' is-corrected' : '';
+    if (l.scene) return `<div class="sl-item${fixed}" id="sl${i}" onclick="jumpTo(${i})" style="color:var(--text-muted);font-style:italic">— ${escapeHtml(l.t)} —</div>`;
+    if (l.acot) return `<div class="sl-item${fixed}" id="sl${i}" onclick="jumpTo(${i})" style="color:var(--text-muted);font-size:11px;font-style:italic">${cut(l.t, 60)}</div>`;
     const mine = isMyLine(l);
-    return `<div class="sl-item${mine?' is-mine':''}" id="sl${i}" onclick="jumpTo(${i})"><span class="sl-speaker">${l.s}</span>${l.t.substring(0,55)}${l.t.length>55?'…':''}</div>`;
+    return `<div class="sl-item${mine?' is-mine':''}${fixed}" id="sl${i}" onclick="jumpTo(${i})"><span class="sl-speaker">${escapeHtml(l.s)}</span>${cut(l.t, 55)}</div>`;
   }).join('');
+  $('patchesBtn').textContent = `Correcciones (${activePatches(patches).length})`;
 }
 
 function updateDisplay() {
@@ -222,12 +257,12 @@ function updateDisplay() {
     card.className = 'line-card';
     sp.className = 'speaker-name other';
     sp.textContent = '';
-    tx.innerHTML = `<span style="font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);font-style:italic">${l.t}</span>`;
+    tx.innerHTML = `<span style="font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);font-style:italic">${escapeHtml(l.t)}</span>`;
   } else if (l.acot) {
     card.className = 'line-card';
     sp.className = 'speaker-name other';
     sp.textContent = 'Acotación';
-    tx.innerHTML = `<span class="stage-dir">${l.t}</span>`;
+    tx.innerHTML = `<span class="stage-dir">${escapeHtml(l.t)}</span>`;
   } else {
     card.className = 'line-card' + (mine ? ' is-mine' : '');
     sp.className = 'speaker-name ' + (mine ? 'mine' : 'other');
@@ -238,6 +273,7 @@ function updateDisplay() {
       tx.textContent = l.t;
     }
   }
+  if (l.patches) sp.insertAdjacentHTML('beforeend', '<span class="corrected-badge">✎ corregida</span>');
 
   // Update list
   document.querySelectorAll('[id^=sl]').forEach((el, i) => {
@@ -400,10 +436,136 @@ function goSetup() {
   $('setup').style.display = 'flex';
 }
 
+// Corrections (local for now: localStorage per play)
+let editMode = 'edit'; // 'edit' the current line | 'insert' after it
+
+function pausePlayback() {
+  if (isPaused) return;
+  stopAll();
+  isPaused = true;
+  $('playBtn').textContent = '▶ Continuar';
+  setStatus('paused');
+}
+
+function speakerOptions(selected, withStageDir) {
+  const names = play.characters.map((c) => c.name);
+  if (selected && !names.some((n) => normalizeName(n) === normalizeName(selected))) names.push(selected);
+  const opts = names.map((n) =>
+    `<option value="${escapeHtml(n)}"${normalizeName(n) === normalizeName(selected) ? ' selected' : ''}>${escapeHtml(n)}</option>`);
+  if (withStageDir) opts.unshift(`<option value=""${selected ? '' : ' selected'}>(acotación)</option>`);
+  return opts.join('');
+}
+
+function openEditor() {
+  if (!author) { alert('Para corregir, vuelve al inicio y elige tu nombre en «¿Quién eres?».'); return; }
+  const l = SCRIPT[currentIdx];
+  if (!l) return;
+  pausePlayback();
+  editMode = 'edit';
+  $('editTitle').textContent = 'Corregir línea';
+  $('editSpeakerField').style.display = l.scene ? 'none' : '';
+  // A spoken line can change speaker but not become a stage direction; a stage direction can get a speaker.
+  $('editSpeaker').innerHTML = speakerOptions(l.acot ? '' : l.s, Boolean(l.acot));
+  $('editText').value = l.t;
+  $('editLineActions').style.display = '';
+  $('undoLineBtn').disabled = !l.patches;
+  $('editDialog').showModal();
+}
+
+function insertAfterCurrent() {
+  const l = SCRIPT[currentIdx];
+  editMode = 'insert';
+  $('editTitle').textContent = 'Añadir línea después';
+  $('editSpeakerField').style.display = '';
+  $('editSpeaker').innerHTML = speakerOptions(isSkippable(l) ? '' : l.s, true);
+  $('editText').value = '';
+  $('editLineActions').style.display = 'none';
+  $('editText').focus();
+}
+
+function closeEditor() { $('editDialog').close(); }
+
+const patchCtx = () => ({ author, deviceId: deviceId(), now: new Date().toISOString(), uuid });
+
+// Saves new patches and re-applies them, staying on the same line (or on the new one).
+function commitPatches(newPatches, focusId) {
+  if (newPatches.length === 0) return;
+  patches = [...patches, ...newPatches];
+  savePatches();
+  refreshScript(focusId);
+}
+
+function refreshScript(focusId) {
+  const currentId = focusId ?? SCRIPT[currentIdx]?.id;
+  SCRIPT = applyPatches(play.lines, patches);
+  const i = SCRIPT.findIndex((l) => l.id === currentId);
+  currentIdx = i >= 0 ? i : Math.min(currentIdx, SCRIPT.length - 1);
+  renderScriptList();
+  updateDisplay();
+}
+
+function saveEditor() {
+  const l = SCRIPT[currentIdx];
+  const speaker = $('editSpeakerField').style.display === 'none' ? '' : $('editSpeaker').value;
+  const text = $('editText').value;
+  if (editMode === 'insert') {
+    if (!text.trim()) { alert('Escribe el texto de la línea.'); return; }
+    const p = newPatch({ op: 'insert', afterId: l.id, ...(speaker ? { speaker } : {}), text: text.trim() }, patchCtx());
+    commitPatches([p], p.lineId);
+  } else {
+    commitPatches(patchesFromEdit(l, { speaker, text }, patchCtx()));
+  }
+  closeEditor();
+}
+
+function deleteCurrentLine() {
+  const l = SCRIPT[currentIdx];
+  if (!confirm(`¿Borrar esta línea?\n\n${l.s ? l.s + ': ' : ''}${l.t}`)) return;
+  commitPatches([newPatch({ op: 'delete', lineId: l.id }, patchCtx())]);
+  closeEditor();
+}
+
+function undo(id) {
+  patches = undoPatch(patches, id);
+  savePatches();
+  refreshScript();
+}
+
+// Undoes the latest correction of the current line.
+function undoCurrentLine() {
+  const ids = SCRIPT[currentIdx]?.patches;
+  if (!ids) return;
+  undo(ids[ids.length - 1]);
+  closeEditor();
+}
+
+function openCorrections() {
+  pausePlayback();
+  renderCorrections();
+  $('patchesDialog').showModal();
+}
+
+function renderCorrections() {
+  const active = activePatches(patches).slice().reverse(); // newest first
+  // Corrections to added lines quote the added text (the base play doesn't have it).
+  const added = patches.filter((p) => p.op === 'insert')
+    .map((p) => (p.speaker ? { id: p.lineId, s: p.speaker, t: p.text } : { id: p.lineId, t: p.text, acot: true }));
+  const known = [...play.lines, ...added];
+  $('patchList').innerHTML = active.length === 0
+    ? '<p class="patch-empty">Aún no hay correcciones en esta obra.</p>'
+    : active.map((p) => `<div class="patch-item"><div>${escapeHtml(describePatch(p, known))}
+        <div class="patch-meta">${escapeHtml(p.author ?? '')} · ${new Date(p.createdAt).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</div></div>
+        <button class="btn" onclick="undoFromList('${escapeHtml(p.id)}')">↶ Deshacer</button></div>`).join('');
+}
+
+function undoFromList(id) { undo(id); renderCorrections(); }
+
 // Modules don't leak to window: expose what the inline onclick handlers call.
 Object.assign(window, {
   startSession, togglePlay, revealLine, restartScene, nextScene, prevScene,
   nextLine, prevLine, repeatLine, jumpTo, goSetup,
+  openEditor, closeEditor, saveEditor, insertAfterCurrent, deleteCurrentLine, undoCurrentLine,
+  openCorrections, undoFromList,
 });
 
 loadIndex();

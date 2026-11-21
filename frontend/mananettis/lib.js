@@ -173,3 +173,45 @@ export function applyPatches(lines, patches) {
   }
   return result;
 }
+
+// ctx = { author, deviceId, now (ISO string), uuid() }. Inserted lines get id "n-<uuid>".
+export function newPatch(fields, { author, deviceId, now, uuid }) {
+  const id = uuid();
+  const lineId = fields.op === "insert" ? `n-${id}` : fields.lineId;
+  return { id, ...fields, lineId, author, deviceId, createdAt: now };
+}
+
+// The patches (0–2) that turn `line` into what the edit dialog says: edit and/or reassign.
+export function patchesFromEdit(line, { speaker, text }, ctx) {
+  const patches = [];
+  const newText = (text ?? "").trim();
+  if (newText && newText !== line.t.trim()) {
+    patches.push(newPatch({ op: "edit", lineId: line.id, text: newText }, ctx));
+  }
+  if (speaker && normalizeName(speaker) !== normalizeName(line.s)) {
+    patches.push(newPatch({ op: "reassign", lineId: line.id, speaker }, ctx));
+  }
+  return patches;
+}
+
+export function undoPatch(patches, id) {
+  return patches.map((p) => (p.id === id ? { ...p, undone: true } : p));
+}
+
+export function activePatches(patches) {
+  return patches.filter((p) => !p.undone);
+}
+
+const quote = (text) => `«${text.length > 40 ? text.slice(0, 40) + "…" : text}»`;
+const who = (line) => (isSkippable(line) || !line.s ? "(acotación)" : line.s);
+
+// One line of text for the corrections list, quoting the base line it touches.
+export function describePatch(p, baseLines) {
+  if (p.op === "insert") return `Añadida: ${p.speaker || "(acotación)"} ${quote(p.text ?? "")}`;
+  const line = baseLines.find((l) => l.id === p.lineId);
+  const target = line ? `${who(line)} ${quote(line.t)}` : "línea añadida";
+  if (p.op === "edit") return `Texto de ${target} → ${quote(p.text ?? "")}`;
+  if (p.op === "delete") return `Borrada: ${target}`;
+  if (p.op === "reassign") return line ? `${who(line)} → ${p.speaker}: ${quote(line.t)}` : `Línea añadida → ${p.speaker}`;
+  return p.op;
+}
