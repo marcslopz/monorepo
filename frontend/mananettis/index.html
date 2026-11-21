@@ -119,6 +119,31 @@
     font-family: 'DM Sans', sans-serif;
   }
 
+  .char-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 1.25rem;
+  }
+  .char-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .char-chip:has(input:checked) {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .char-chip input { accent-color: var(--gold); margin: 0; }
+
   .btn-primary {
     width: 100%;
     padding: 14px;
@@ -434,10 +459,20 @@
   </div>
 
   <div class="card">
+    <div id="playField">
+      <span class="field-label">Obra</span>
+      <select id="playSelect">
+        <option value="">Cargando obras...</option>
+      </select>
+    </div>
+
     <span class="field-label">¿Quién eres?</span>
     <select id="actorSelect">
       <option value="">Cargando guion...</option>
     </select>
+
+    <span class="field-label">Tus personajes</span>
+    <div class="char-list" id="charList"></div>
 
     <span class="field-label">Pausa para decir tu línea</span>
     <div class="slider-row">

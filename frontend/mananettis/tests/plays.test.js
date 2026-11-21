@@ -17,3 +17,18 @@ test("cadaver-garcia.json ids are sequential l0001…", async () => {
   const { lines } = await load("cadaver-garcia");
   lines.forEach((l, i) => assert.equal(l.id, `l${String(i + 1).padStart(4, "0")}`));
 });
+
+test("plays/index.json lists every play file, and each one is valid", async () => {
+  const index = JSON.parse(await readFile(new URL("../plays/index.json", import.meta.url), "utf8"));
+  const { readdir } = await import("node:fs/promises");
+  const files = (await readdir(new URL("../plays/", import.meta.url)))
+    .filter((f) => f.endsWith(".json") && f !== "index.json")
+    .map((f) => f.replace(/\.json$/, ""));
+  assert.deepEqual(index.plays.map((p) => p.slug).sort(), files.sort());
+  for (const entry of index.plays) {
+    const play = await load(entry.slug);
+    assert.equal(play.slug, entry.slug);
+    assert.equal(play.title, entry.title);
+    assert.deepEqual(validatePlay(play), [], entry.slug);
+  }
+});

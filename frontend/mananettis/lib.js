@@ -16,15 +16,37 @@ function namesOf(character) {
   return [character.name, ...(character.aliases ?? [])].map(normalizeName);
 }
 
-// Normalized names (aliases included) of every character the actor plays.
-export function charactersOfActor(play, actor) {
-  const entry = play.cast.find((c) => c.actor === actor);
+// Normalized names (aliases included) of the chosen characters (several for double roles).
+export function charactersOfNames(play, names) {
   const mine = new Set();
-  for (const name of entry?.characters ?? []) {
+  for (const name of names) {
     const character = play.characters.find((c) => normalizeName(c.name) === normalizeName(name));
     for (const n of character ? namesOf(character) : [normalizeName(name)]) mine.add(n);
   }
   return mine;
+}
+
+// Normalized names (aliases included) of every character the actor plays.
+export function charactersOfActor(play, actor) {
+  const entry = play.cast.find((c) => c.actor === actor);
+  return charactersOfNames(play, entry?.characters ?? []);
+}
+
+// Characters with at least one line, in the order the play declares them (for the checkboxes).
+export function speakingCharacters(play) {
+  const speakers = new Set(play.lines.filter((l) => !isSkippable(l)).map((l) => normalizeName(l.s)));
+  return play.characters
+    .filter((c) => namesOf(c).some((n) => speakers.has(n)))
+    .map((c) => c.name);
+}
+
+// plays/index.json: { plays: [{ slug, title, hidden? }] }. Hidden ones only with ?all=1.
+export function visiblePlays(index, showAll) {
+  return index.plays.filter((p) => showAll || !p.hidden);
+}
+
+export function pickPlay(plays, slug) {
+  return plays.find((p) => p.slug === slug) ?? plays[0];
 }
 
 export function isSkippable(line) {
@@ -100,5 +122,11 @@ const titleCase = (name) => name.toLowerCase().replace(/(^|\s)\p{L}/gu, (m) => m
 
 // "Auri (Ramona / Forense)" for the "who are you?" selector.
 export function actorLabel({ actor, characters }) {
-  return `${actor} (${characters.map(titleCase).join(" / ")})`;
+  return selectionLabel(actor, characters);
+}
+
+// "Auri (Ramona / Forense)", or just "Ramona / Forense" without an actor.
+export function selectionLabel(actor, characters) {
+  const names = characters.map(titleCase).join(" / ");
+  return actor ? `${actor} (${names})` : names;
 }

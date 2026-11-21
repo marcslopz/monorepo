@@ -1,5 +1,10 @@
 import {
-  charactersOfActor,
+  normalizeName,
+  charactersOfNames,
+  speakingCharacters,
+  visiblePlays,
+  pickPlay,
+  selectionLabel,
   isMyLine as isMyLineOf,
   isSkippable,
   stripParens,
@@ -12,32 +17,102 @@ import {
   actorLabel,
 } from "./lib.js";
 
-const PLAY_URL = "plays/cadaver-garcia.json";
+const INDEX_URL = "plays/index.json";
+const LAST_KEY = "mananettis:last"; // { play, actor } of the previous session, per browser
 
 let play = null;
 let SCRIPT = [];
 let myChars = new Set();
 
 const $ = (id) => document.getElementById(id);
+const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-async function loadPlay() {
+function readLast() {
+  try { return JSON.parse(localStorage.getItem(LAST_KEY)) ?? {}; } catch { return {}; }
+}
+function saveLast(last) {
+  try { localStorage.setItem(LAST_KEY, JSON.stringify(last)); } catch { /* private mode */ }
+}
+
+async function fetchJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function showLoadError(what, err) {
+  $("subtitle").textContent = `No se pudo cargar ${what} (${err.message}). Recarga la página.`;
+}
+
+// ?play=<slug> picks the play, ?all=1 also lists the hidden ones.
+async function loadIndex() {
+  const params = new URLSearchParams(location.search);
+  let index;
   try {
-    const res = await fetch(PLAY_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    play = await res.json();
+    index = await fetchJson(INDEX_URL);
   } catch (err) {
-    $("subtitle").textContent = `No se pudo cargar el guion (${err.message}). Recarga la página.`;
+    showLoadError("la lista de obras", err);
     return;
   }
+  const plays = visiblePlays(index, params.get("all") === "1");
+  const chosen = pickPlay(plays, params.get("play") ?? readLast().play);
+  if (!chosen) { $("subtitle").textContent = "No hay obras disponibles."; return; }
+  $("playSelect").innerHTML = plays
+    .map((p) => `<option value="${escapeHtml(p.slug)}">${escapeHtml(p.title)}</option>`)
+    .join("");
+  $("playSelect").value = chosen.slug;
+  $("playField").style.display = plays.length > 1 ? "" : "none";
+  $("playSelect").addEventListener("change", () => loadPlay($("playSelect").value));
+  await loadPlay(chosen.slug);
+}
+
+async function loadPlay(slug) {
+  play = null;
+  $("actorSelect").innerHTML = '<option value="">Cargando guion...</option>';
+  $("charList").innerHTML = "";
+  let loaded;
+  try {
+    loaded = await fetchJson(`plays/${encodeURIComponent(slug)}.json`);
+  } catch (err) {
+    showLoadError("el guion", err);
+    return;
+  }
+  if ($("playSelect").value && $("playSelect").value !== slug) return; // changed meanwhile
+  play = loaded;
   SCRIPT = play.lines;
+  $("subtitle").textContent = "Apuntador Mañanettis";
   document.querySelectorAll(".play-title").forEach((el) => { el.textContent = play.title; });
   $("actorSelect").innerHTML =
     '<option value="">— Selecciona tu nombre —</option>' +
-    play.cast.map((c) => `<option value="${c.actor}">${actorLabel(c)}</option>`).join("");
+    play.cast.map((c) => `<option value="${escapeHtml(c.actor)}">${escapeHtml(actorLabel(c))}</option>`).join("");
+  $("charList").innerHTML = speakingCharacters(play)
+    .map((name) => `<label class="char-chip"><input type="checkbox" value="${escapeHtml(name)}">${escapeHtml(name)}</label>`)
+    .join("");
   $("startFrom").innerHTML =
     '<option value="0">Desde el principio</option>' +
-    sceneStarts(SCRIPT).map((s) => `<option value="${s.idx}">${s.title}</option>`).join("");
+    sceneStarts(SCRIPT).map((s) => `<option value="${s.idx}">${escapeHtml(s.title)}</option>`).join("");
+
+  const last = readLast();
+  if (last.play === play.slug && play.cast.some((c) => c.actor === last.actor)) {
+    $("actorSelect").value = last.actor;
+    checkCastOf(last.actor);
+  }
 }
+
+// Picking an actor ticks their characters; the ticks can then be changed (double roles, standing in).
+function checkCastOf(actor) {
+  const mine = play.cast.find((c) => c.actor === actor)?.characters ?? [];
+  const names = new Set(mine.map(normalizeName));
+  document.querySelectorAll("#charList input").forEach((box) => {
+    box.checked = names.has(normalizeName(box.value));
+  });
+}
+
+function checkedCharacters() {
+  return [...document.querySelectorAll("#charList input:checked")].map((box) => box.value);
+}
+
+$("actorSelect").addEventListener("change", () => { if (play) checkCastOf($("actorSelect").value); });
 
 // Speech synthesis
 let synth = window.speechSynthesis;
@@ -94,10 +169,11 @@ $('pauseSecs').addEventListener('input', function() {
 function startSession() {
   if (!play) { alert('El guion aún no se ha cargado.'); return; }
   const actorVal = $('actorSelect').value;
-  if (!actorVal) { alert('Por favor selecciona tu nombre.'); return; }
-  myChars = charactersOfActor(play, actorVal);
-  const actorText = $('actorSelect').selectedOptions[0].text;
-  $('subtitle').textContent = 'Apuntador Mañanettis · ' + actorText;
+  const chosen = checkedCharacters();
+  if (chosen.length === 0) { alert('Elige tu nombre o marca al menos un personaje.'); return; }
+  myChars = charactersOfNames(play, chosen);
+  saveLast({ play: play.slug, actor: actorVal });
+  $('subtitle').textContent = 'Apuntador Mañanettis · ' + selectionLabel(actorVal, chosen);
   pauseSecs = parseInt($('pauseSecs').value);
   speechRate = parseFloat($('rateSelect').value);
   currentIdx = parseInt($('startFrom').value) || 0;
@@ -326,4 +402,4 @@ Object.assign(window, {
   nextLine, prevLine, repeatLine, jumpTo, goSetup,
 });
 
-loadPlay();
+loadIndex();
