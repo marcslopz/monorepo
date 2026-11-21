@@ -27,6 +27,14 @@
       ]
     }
   ],
+  "revisions": [
+    {
+      "date": "2026-11-21T09:52:50.628Z",
+      "patches": [
+        "17d802d3-40d5-4b26-ac0c-cf1acb0c99a2"
+      ]
+    }
+  ],
   "lines": [
     {"id":"l0001","t":"Escena para dos personajes","acot":true},
     {"id":"l0002","t":"Una administración de lotería. Se ven dos mesas de despacho y, al fondo, una puerta que da acceso a la zona donde está la caja fuerte. RAMÓN está sentado, aparentemente tranquilo, con dos maletas enormes junto a su mesa. Una tiene ropa asomando por la cremallera. RAMÓN lleva la chaqueta abultada y varios fajos de billetes escondidos entre la ropa. Entra RAQUEL.","acot":true},
@@ -39,7 +47,7 @@
     {"id":"l0009","s":"RAMÓN","t":"Son para el viaje."},
     {"id":"l0010","s":"RAQUEL","t":"¿Qué viaje?"},
     {"id":"l0011","s":"RAMÓN","t":"El de mi nueva vida."},
-    {"id":"l0012","s":"RAQUEL","t":"Ramón... ¿Qué has hecho?"},
+    {"id":"l0012","s":"RAQUEL","t":"Ramón... ¿Qué ha pasado?"},
     {"id":"l0013","s":"RAMÓN","t":"Lo que llevábamos semanas planeando."},
     {"id":"l0014","s":"RAQUEL","t":"¡¿Has abierto la caja fuerte?!"},
     {"id":"l0015","s":"RAMÓN","t":"Bueno... técnicamente, la he vaciado."},
