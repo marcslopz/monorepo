@@ -492,10 +492,12 @@
       <option value="1.15">Rápida</option>
     </select>
 
-    <span class="field-label">Empezar desde</span>
-    <select id="startFrom">
-      <option value="0">Desde el principio</option>
-    </select>
+    <div id="startFromField">
+      <span class="field-label">Empezar desde</span>
+      <select id="startFrom">
+        <option value="0">Desde el principio</option>
+      </select>
+    </div>
 
     <button class="btn-primary" onclick="startSession()">Comenzar ensayo</button>
   </div>
@@ -534,7 +536,7 @@
       <button class="btn" data-nav onclick="repeatLine()">↺ Repetir</button>
       <button class="btn btn-danger" onclick="goSetup()">✕ Salir</button>
     </div>
-    <div class="ctrl-row">
+    <div class="ctrl-row" id="sceneControls">
       <button class="btn" data-nav onclick="prevScene()">◀◀ Escena ant.</button>
       <button class="btn" data-nav onclick="restartScene()">↺ Esta escena</button>
       <button class="btn" data-nav onclick="nextScene()">Escena sig. ▶▶</button>

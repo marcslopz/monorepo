@@ -88,9 +88,13 @@ async function loadPlay(slug) {
   $("charList").innerHTML = speakingCharacters(play)
     .map((name) => `<label class="char-chip"><input type="checkbox" value="${escapeHtml(name)}">${escapeHtml(name)}</label>`)
     .join("");
+  const scenes = sceneStarts(SCRIPT);
   $("startFrom").innerHTML =
     '<option value="0">Desde el principio</option>' +
-    sceneStarts(SCRIPT).map((s) => `<option value="${s.idx}">${escapeHtml(s.title)}</option>`).join("");
+    scenes.map((s) => `<option value="${s.idx}">${escapeHtml(s.title)}</option>`).join("");
+  // Plays without scenes (Los peores ladrones): no scene picker, no scene buttons.
+  $("startFromField").style.display = scenes.length ? "" : "none";
+  $("sceneControls").style.display = scenes.length ? "" : "none";
 
   const last = readLast();
   if (last.play === play.slug && play.cast.some((c) => c.actor === last.actor)) {

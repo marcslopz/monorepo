@@ -1,5 +1,8 @@
 {
   "plays": [
-    { "slug": "cadaver-garcia", "title": "El cadáver del señor García" }
+    {"slug": "la-cita", "title": "La cita"},
+    {"slug": "los-peores-ladrones", "title": "Los peores ladrones"},
+    {"slug": "el-punto-rojo", "title": "El punto rojo"},
+    {"slug": "cadaver-garcia", "title": "El cadáver del señor García", "hidden": true}
   ]
 }
