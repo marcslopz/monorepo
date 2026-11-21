@@ -57,3 +57,5 @@
 - Backend: ruff + mypy + pytest (real Postgres via service container)
 - Frontend: eslint + vitest
 - demo uses `--frozen-lockfile` (lock file committed); mariland uses `--ignore-workspace` only (no lock file)
+- mananettis (HTML estático, sin compose): `make test APP=mananettis` → `node --test` en un contenedor `node:22-alpine`;
+  su CI (`ci-mananettis.yml`) corre solo en PR, porque Cloudflare Pages despliega `main` por su cuenta.
